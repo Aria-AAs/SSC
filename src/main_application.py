@@ -4,6 +4,8 @@ from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QPaintEvent, QPainter, QColor, QShowEvent
 from src.items.car import Car
 from src.primitives.point import Point
+from src.majors.world import World
+from data.backups.world_backup import WORLD_BACKUP
 
 
 class MainApplication(QWidget):
@@ -16,6 +18,10 @@ class MainApplication(QWidget):
         self.setSizePolicy(
             QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         )
+        if WORLD_BACKUP:
+            self.world = World.load(WORLD_BACKUP)
+        else:
+            self.world = World()
         self.car = None
         self.w_is_pressed = False
         self.a_is_pressed = False
@@ -42,8 +48,8 @@ class MainApplication(QWidget):
 
     def paintEvent(self, event: QPaintEvent | None) -> None:
         painter = QPainter(self)
-        painter.fillRect(self.rect(), QColor(50, 50, 50))
-
+        painter.fillRect(self.rect(), QColor(30, 170, 80))
+        self.world.draw(painter, Point(self.width() / 2, self.height() / 2))
         self.car.update([])
         for sensor in self.car.sensors:
             sensor.draw(painter)

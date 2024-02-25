@@ -184,12 +184,12 @@ class World:
         for segment in self.graph.segments:
             segment.draw(
                 painter,
-                outline_color=QColor(255, 255, 255),
+                color=QColor(255, 255, 255),
                 width=4,
                 dash_style=[10, 10],
             )
         for segment in self.road_borders:
-            segment.draw(painter, outline_color=QColor(255, 255, 255), width=4)
+            segment.draw(painter, color=QColor(255, 255, 255), width=4)
         items = []
         for building in self.buildings:
             if building.base.distance_to_point(view_point) < render_radius:
