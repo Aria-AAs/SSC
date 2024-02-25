@@ -1,3 +1,4 @@
+from typing import Self
 from math import floor
 from random import random
 from PyQt6.QtGui import QPainter, QColor
@@ -29,6 +30,11 @@ class World:
         self.lane_guides = []
         self.markings = []
         self.generate()
+
+    def load(self, data) -> Self:
+        world = World()
+        world.graph = data.graph
+        return world
 
     def generate(self) -> None:
         self.roads.clear()

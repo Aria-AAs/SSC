@@ -9,9 +9,10 @@ class Viewport:
         self,
         center_x: float,
         center_y: float,
+        zoom: float = 1,
         offset: Point | None = None,
     ) -> None:
-        self.zoom = 1
+        self.zoom = zoom
         self.center = Point(center_x, center_y)
         if offset:
             self.offset = offset

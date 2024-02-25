@@ -88,8 +88,8 @@ class Building:
         for roof in roofs:
             roof.draw(
                 painter,
-                color=QColor(221, 68, 68),
-                outline_color=QColor(204, 68, 68),
+                color=QColor(210, 60, 60),
+                outline_color=QColor(190, 50, 50),
                 width=8,
                 join_style=Qt.PenJoinStyle.RoundJoin,
             )
