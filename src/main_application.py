@@ -1,11 +1,20 @@
 from math import degrees
 from PyQt6.QtWidgets import QWidget, QSizePolicy
 from PyQt6.QtCore import Qt, QTimer
-from PyQt6.QtGui import QPaintEvent, QPainter, QColor, QShowEvent
+from PyQt6.QtGui import (
+    QPaintEvent,
+    QPainter,
+    QResizeEvent,
+    QShowEvent,
+    QMouseEvent,
+    QWheelEvent,
+)
 from src.items.car import Car
 from src.primitives.point import Point
 from src.majors.world import World
+from src.majors.viewport import Viewport
 from data.backups.world_backup import WORLD_BACKUP
+from data.backups.viewport_backup import VIEWPORT_BACKUP
 
 
 class MainApplication(QWidget):
@@ -19,9 +28,10 @@ class MainApplication(QWidget):
             QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         )
         if WORLD_BACKUP:
-            self.world = World.load(WORLD_BACKUP)
+            self.world = World().load(WORLD_BACKUP)
         else:
             self.world = World()
+        self.viewport = None
         self.car = None
         self.w_is_pressed = False
         self.a_is_pressed = False
@@ -46,16 +56,48 @@ class MainApplication(QWidget):
             if self.d_is_pressed:
                 self.car.turn_steering_wheel(degrees(0.03))
 
+    def mousePressEvent(self, event: QMouseEvent | None) -> None:
+        if event.button() == Qt.MouseButton.MiddleButton:
+            self.viewport.mouse_middle_button_down(
+                Point(event.position().x(), event.position().y())
+            )
+        return super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event: QMouseEvent | None) -> None:
+        if self.viewport.drag["active"]:
+            self.viewport.mouse_move(Point(event.position().x(), event.position().y()))
+        return super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event: QMouseEvent | None) -> None:
+        if self.viewport.drag["active"]:
+            self.viewport.mouse_middle_button_up()
+        return super().mouseReleaseEvent(event)
+
+    def wheelEvent(self, event: QWheelEvent | None) -> None:
+        steps = round(event.angleDelta().y() / 120)
+        self.viewport.mouse_wheel_scroll(steps)
+        return super().wheelEvent(event)
+
     def paintEvent(self, event: QPaintEvent | None) -> None:
         painter = QPainter(self)
-        painter.fillRect(self.rect(), QColor(30, 170, 80))
-        self.world.draw(painter, Point(self.width() / 2, self.height() / 2))
+        view_point = self.viewport.get_offset().scale(-1)
+        self.viewport.reset(painter, self.rect())
+        self.world.draw(painter, view_point)
         self.car.update([])
         for sensor in self.car.sensors:
             sensor.draw(painter)
         self.car.draw(painter)
         return super().paintEvent(event)
 
-    def showEvent(self, event: QShowEvent | None) -> None:
-        self.car = Car(Point(self.width() / 2, self.height() / 2))
-        return super().showEvent(event)
+    def resizeEvent(self, event: QShowEvent | None) -> None:
+        self.car = Car(Point(self.width() / 2 - 120, self.height() / 2))
+        if VIEWPORT_BACKUP:
+            self.viewport = Viewport(
+                self.width() / 2,
+                self.height() / 2,
+                VIEWPORT_BACKUP["zoom"],
+                VIEWPORT_BACKUP["offset"],
+            )
+        else:
+            self.viewport = Viewport(self.width() / 2, self.height() / 2)
+        return super().resizeEvent(event)

@@ -1,1 +1,1 @@
-WORLD_BACKUP = None
+WORLD_BACKUP = {}
