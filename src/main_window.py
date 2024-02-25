@@ -9,7 +9,7 @@ from PyQt6.QtWidgets import (
     QPushButton,
 )
 from PyQt6.QtCore import Qt, QSize
-from PyQt6.QtGui import QIcon
+from PyQt6.QtGui import QIcon, QKeyEvent
 from src.main_application import MainApplication
 
 
@@ -70,3 +70,27 @@ class MainWindow(QWidget):
         self.main_application_layout.addWidget(self.main_application)
         self.main_window_layout.addLayout(self.main_application_layout)
         self.setLayout(self.main_window_layout)
+
+    def keyPressEvent(self, event: QKeyEvent | None) -> None:
+        key = event.key()
+        if key == Qt.Key.Key_W:
+            self.main_application.w_is_pressed = True
+        elif key == Qt.Key.Key_A:
+            self.main_application.a_is_pressed = True
+        elif key == Qt.Key.Key_S:
+            self.main_application.s_is_pressed = True
+        elif key == Qt.Key.Key_D:
+            self.main_application.d_is_pressed = True
+        return super().keyPressEvent(event)
+
+    def keyReleaseEvent(self, event: QKeyEvent | None) -> None:
+        key = event.key()
+        if key == Qt.Key.Key_W:
+            self.main_application.w_is_pressed = False
+        elif key == Qt.Key.Key_A:
+            self.main_application.a_is_pressed = False
+        elif key == Qt.Key.Key_S:
+            self.main_application.s_is_pressed = False
+        elif key == Qt.Key.Key_D:
+            self.main_application.d_is_pressed = False
+        return super().keyReleaseEvent(event)
