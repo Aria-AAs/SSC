@@ -82,7 +82,7 @@ class World:
                 length / (self.building_minimum_length + self.space_between_objects)
             )
             building_length = length / building_count - self.space_between_objects
-            direction = segment.direction_vector()
+            direction = segment.direction()
             point_1 = segment.start
             point_2 = point_1 + direction.scale(building_length)
             supports.append(Segment(point_1, point_2))
@@ -184,7 +184,7 @@ class World:
             road.draw(
                 painter,
                 color=QColor(51, 51, 51),
-                width=15,
+                outline_width=15,
                 outline_color=QColor(51, 51, 51),
             )
         for segment in self.graph.segments:

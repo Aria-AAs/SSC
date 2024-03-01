@@ -1,3 +1,5 @@
+"""This module contains the Sensor class."""
+
 from math import sin, cos, radians
 from PyQt6.QtCore import Qt, QLineF
 from PyQt6.QtGui import QPainter, QPen, QColor
@@ -6,6 +8,8 @@ from src.maths.utils import find_intersection
 
 
 class Sensor:
+    """Sensor class represents a sensor."""
+
     def __init__(self, length: float) -> None:
         self.length = length
         self.angle = 0
@@ -15,9 +19,22 @@ class Sensor:
         self.offset = None
 
     def read(self) -> float | None:
+        """Read the value of the sensor.
+
+        Returns:
+            float | None: The value of the sensor.
+        """
         return self.offset
 
-    def update(self, road_borders, angle, start_position):
+    def update(self, road_borders: list, angle: float, start_position: Point):
+        """Calculate the nearest intersection in range of the sensor and update the value of the
+        sensor.
+
+        Args:
+            road_borders (list): The borders of roads where cars get damaged.
+            angle (float): The angle of the sensor.
+            start_position (Point): The starting point of the sensor.
+        """
         self.angle = angle
         self.start = start_position
         self.end = Point(
@@ -44,12 +61,14 @@ class Sensor:
             self.offset = None
 
     def draw(self, painter: QPainter):
-        if self.start:
-            painter.setPen(QPen(QColor(0, 0, 0), 2, Qt.PenStyle.SolidLine))
-            line = QLineF(self.intersect.x, self.intersect.y, self.end.x, self.end.y)
-            painter.drawLine(line)
-            painter.setPen(QPen(QColor(255, 255, 0), 2, Qt.PenStyle.SolidLine))
-            line = QLineF(
-                self.start.x, self.start.y, self.intersect.x, self.intersect.y
-            )
-            painter.drawLine(line)
+        """Draw the sensor using the given painter.
+
+        Args:
+            painter (QPainter): The painter is used for drawing.
+        """
+        painter.setPen(QPen(QColor(0, 0, 0), 2, Qt.PenStyle.SolidLine))
+        line = QLineF(self.intersect.x, self.intersect.y, self.end.x, self.end.y)
+        painter.drawLine(line)
+        painter.setPen(QPen(QColor(255, 255, 0), 2, Qt.PenStyle.SolidLine))
+        line = QLineF(self.start.x, self.start.y, self.intersect.x, self.intersect.y)
+        painter.drawLine(line)

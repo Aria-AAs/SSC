@@ -1,3 +1,5 @@
+"""This module contains the Envelope class."""
+
 from typing import Self
 from math import pi
 from PyQt6.QtGui import QPainter
@@ -6,6 +8,8 @@ from src.primitives.polygon import Polygon
 
 
 class Envelope:
+    """Envelope class represents an envelope."""
+
     def __init__(
         self, segment: Segment | None = None, width: float = 2, roundness: int = 1
     ) -> None:
@@ -30,10 +34,20 @@ class Envelope:
     def __str__(self) -> str:
         return f"An Envelope with {self.polygon.__str__()}"
 
-    def load(self, data) -> Self:
+    def load(self, data: dict) -> Self:
+        """A method that extracts information from data.
+
+        Args:
+            data (dict): The given data.
+        """
         envelope = Envelope()
         envelope.polygon = Polygon([]).load(data.polygon)
         return envelope
 
     def draw(self, painter: QPainter, *args, **kwargs):
+        """Draw the envelope using the given painter.
+
+        Args:
+            painter (QPainter): The painter is used for drawing.
+        """
         self.polygon.draw(painter, *args, **kwargs)
