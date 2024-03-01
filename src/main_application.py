@@ -1,3 +1,5 @@
+"""This module contains the MainApplication class."""
+
 from math import degrees
 from PyQt6.QtWidgets import QWidget, QSizePolicy
 from PyQt6.QtCore import Qt, QTimer
@@ -17,6 +19,14 @@ from data.backups.viewport_backup import VIEWPORT_BACKUP
 
 
 class MainApplication(QWidget):
+    """The main application that is Inherited from QWidget."""
+
+    w_is_pressed = False
+    a_is_pressed = False
+    s_is_pressed = False
+    d_is_pressed = False
+    frames_show_per_second = 30
+
     def __init__(
         self,
         parent: QWidget | None = None,
@@ -32,19 +42,18 @@ class MainApplication(QWidget):
             self.world = World()
         self.viewport = None
         self.car = None
-        self.w_is_pressed = False
-        self.a_is_pressed = False
-        self.s_is_pressed = False
-        self.d_is_pressed = False
-        self.frames_show_per_second = 30
-        self.graphic_timer = QTimer(self)
-        self.graphic_timer.timeout.connect(self.update)
-        self.graphic_timer.start(round((1 / self.frames_show_per_second) * 1000))
         self.base_timer = QTimer(self)
         self.base_timer.timeout.connect(self.run)
+        self.graphic_timer = QTimer(self)
+        self.graphic_timer.timeout.connect(self.update)
+
+    def start_timers(self) -> None:
+        """Start timers of the application."""
         self.base_timer.start(10)
+        self.graphic_timer.start(round((1 / self.frames_show_per_second) * 1000))
 
     def run(self) -> None:
+        """A method that runs on base timer timeout and runs the base logic of the application."""
         if self.car.control_type == "user":
             if self.w_is_pressed:
                 self.car.accelerate_forward()
@@ -56,28 +65,58 @@ class MainApplication(QWidget):
                 self.car.turn_steering_wheel(degrees(0.03))
 
     def mousePressEvent(self, event: QMouseEvent | None) -> None:
+        """The mousePressEvent method is an event handler.
+        It activates when keys on the mouse are pressed.
+
+        Args:
+            event (QMouseEvent | None): An instance contains event information.
+        """
         if event.button() == Qt.MouseButton.MiddleButton:
             self.viewport.mouse_middle_button_down(
                 Point(event.position().x(), event.position().y())
             )
-        return super().mousePressEvent(event)
+        super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event: QMouseEvent | None) -> None:
+        """The mouseMoveEvent method is an event handler.
+        It activates when the mouse is moved.
+
+        Args:
+            event (QMouseEvent | None): An instance contains event information.
+        """
         if self.viewport.drag["active"]:
             self.viewport.mouse_move(Point(event.position().x(), event.position().y()))
-        return super().mouseMoveEvent(event)
+        super().mouseMoveEvent(event)
 
     def mouseReleaseEvent(self, event: QMouseEvent | None) -> None:
+        """The mouseReleaseEvent method is an event handler.
+        It activates when keys on the keyboard are released.
+
+        Args:
+            event (QMouseEvent | None): An instance contains event information.
+        """
         if self.viewport.drag["active"]:
             self.viewport.mouse_middle_button_up()
-        return super().mouseReleaseEvent(event)
+        super().mouseReleaseEvent(event)
 
     def wheelEvent(self, event: QWheelEvent | None) -> None:
+        """The wheelEvent method is an event handler.
+        It activates when the mouse wheel is turned.
+
+        Args:
+            event (QWheelEvent | None): An instance contains event information.
+        """
         steps = round(event.angleDelta().y() / 120)
         self.viewport.mouse_wheel_scroll(steps)
-        return super().wheelEvent(event)
+        super().wheelEvent(event)
 
     def paintEvent(self, event: QPaintEvent | None) -> None:
+        """The paintEvent method is an event handler.
+        It activates when the QWidget is updated.
+
+        Args:
+            event (QPaintEvent | None): An instance contains event information.
+        """
         painter = QPainter(self)
         view_point = self.viewport.get_offset().scale(-1)
         self.viewport.reset(painter, self.rect())
@@ -86,9 +125,15 @@ class MainApplication(QWidget):
         for sensor in self.car.sensors:
             sensor.draw(painter)
         self.car.draw(painter)
-        return super().paintEvent(event)
+        super().paintEvent(event)
 
     def resizeEvent(self, event: QShowEvent | None) -> None:
+        """The resizeEvent method is an event handler.
+        It activates when the QWidget is resized.
+
+        Args:
+            event (QShowEvent | None): An instance contains event information.
+        """
         self.car = Car(Point(self.width() / 2 - 120, self.height() / 2))
         if VIEWPORT_BACKUP:
             self.viewport = Viewport(
@@ -99,4 +144,5 @@ class MainApplication(QWidget):
             )
         else:
             self.viewport = Viewport(self.width() / 2, self.height() / 2)
-        return super().resizeEvent(event)
+        super().resizeEvent(event)
+        self.start_timers()

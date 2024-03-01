@@ -1,5 +1,7 @@
-from pathlib2 import Path
+"""This module contains the Car class."""
+
 from math import pi, sqrt, atan2, sin, cos, radians, degrees
+from pathlib2 import Path
 from PyQt6.QtCore import Qt, QRect
 from PyQt6.QtGui import QPainter, QPixmap, QRegion, QBitmap, QColor
 from src.items.sensor import Sensor
@@ -10,6 +12,8 @@ from src.maths.utils import change_range, lerp
 
 
 class Car:
+    """Car class represents a car."""
+
     max_speed = 5
 
     def __init__(
@@ -55,6 +59,11 @@ class Car:
         self.mask = self.image.toImage().createAlphaMask()
 
     def update(self, road_borders: list) -> None:
+        """Calculate the situation of the car.
+
+        Args:
+            road_borders (list): The borders of roads where cars get damaged.
+        """
         if not self.damaged:
             self.age += 1
             self.move()
@@ -92,6 +101,11 @@ class Car:
                         self.turn_steering_wheel(degrees(-0.03))
 
     def create_polygon(self) -> Polygon:
+        """Create a polygon that the car fits into it.
+
+        Returns:
+            Polygon: The created polygon.
+        """
         points = []
         radius = sqrt(self.width**2 + self.height**2) / 2
         alpha = atan2(self.width, self.height)
@@ -122,6 +136,14 @@ class Car:
         return Polygon(points)
 
     def assess_damage(self, road_borders: list) -> bool:
+        """Check if the car crashed.
+
+        Args:
+            road_borders (list): The borders of roads where cars get damaged.
+
+        Returns:
+            bool: True if the car crashed and false if the car is still intact.
+        """
         i = 0
         while i < len(road_borders):
             if self.polygon.intersect_with_polygon(road_borders[i]):
@@ -131,6 +153,7 @@ class Car:
         return False
 
     def move(self):
+        """Calculate the physics of the car movement."""
         if self.speed > 0:
             self.speed -= self.friction
         elif self.speed < 0:
@@ -140,23 +163,37 @@ class Car:
         self.position.x += sin(radians(self.angle)) * self.speed
         self.position.y -= cos(radians(self.angle)) * self.speed
 
-    def turn_steering_wheel(self, amount):
+    def turn_steering_wheel(self, amount: float):
+        """Simulate turning the steering wheel by changing the angle of the car.
+
+        Args:
+            amount (float): The amount of turning.
+        """
         if self.speed != 0:
             self.angle += amount
 
     def accelerate_forward(self):
+        """Simulate accelerating forward by changing the speed."""
         if not self.damaged:
             self.speed += self.acceleration
             if self.speed > self.max_speed:
                 self.speed = self.max_speed
 
     def accelerate_backward(self):
+        """Simulate accelerating backward by changing the speed."""
         if not self.damaged:
             self.speed -= self.acceleration
             if self.speed < -self.max_speed / 2:
                 self.speed = -self.max_speed / 2
 
     def draw(self, painter: QPainter, transparency: float = 1):
+        """Draw the car using the given painter.
+
+        Args:
+            painter (QPainter): The painter is used for drawing.
+            transparency (float, optional): The percentage of transparency.
+            0 means invisible and 1 means fully solid. Defaults to 1.
+        """
         rect = QRect(-self.width // 2, -self.height // 2, self.width, self.height)
         painter.save()
         painter.translate(self.position.x, self.position.y)

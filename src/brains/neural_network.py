@@ -1,3 +1,5 @@
+"""This module contains the NeuralNetwork class."""
+
 from typing import Self
 from math import floor
 from random import random
@@ -6,6 +8,8 @@ from src.maths.utils import lerp
 
 
 class NeuralNetwork:
+    """NeuralNetwork class represents a neural network."""
+
     def __init__(self, neuron_count: list) -> None:
         self.layers_count = len(neuron_count) - 1
         self.layers = []
@@ -13,6 +17,14 @@ class NeuralNetwork:
             self.layers.append(Layer(neuron_count[i], neuron_count[i + 1]))
 
     def feedforward(self, inputs: list) -> list:
+        """Feed given inputs to the network and calculate outputs.
+
+        Args:
+            inputs (list): The inputs to feed the network.
+
+        Returns:
+            list: A list of values that are outputs of the network.
+        """
         outputs = []
         outputs = self.layers[0].feedforward(inputs)
         for i in range(1, self.layers_count):
@@ -20,6 +32,11 @@ class NeuralNetwork:
         return outputs
 
     def mix_networks(self, networks: list) -> None:
+        """Mix all given networks.
+
+        Args:
+            networks (list): A list of networks to mix.
+        """
         while 0 < len(networks):
             if len(networks) == 1:
                 break
@@ -32,6 +49,15 @@ class NeuralNetwork:
         self.layers = networks[0].layers
 
     def crossover(self, other: Self, crossover_rate: float = 0.5) -> None:
+        """Calculate the child network of two given parent networks.
+
+        Args:
+            other (Self): Other parent network to calculate the child network.
+            crossover_rate (float, optional): The rate for selecting parents' genomes.
+            Less rate means the child network is more similar to this network and
+            more rate means the child network is more similar to the other given network.
+            Defaults to 0.5.
+        """
         for i in range(self.layers_count):
             j = 0
             while j < len(self.layers[i].biases):
@@ -52,6 +78,14 @@ class NeuralNetwork:
                 j += 1
 
     def mutate(self, amount: float = 0.3, mutation_rate: float = 0.05) -> None:
+        """Mutate the network.
+
+        Args:
+            amount (float, optional): The amount of randomness of mutated genomes.
+            0 means no difference at all and 1 means random genome. Defaults to 0.3.
+            mutation_rate (float, optional): This rate tells the percentage of genomes that can
+            mutate. Defaults to 0.05.
+        """
         for layer in self.layers:
             i = 0
             while i < len(layer.biases):

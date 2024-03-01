@@ -1,3 +1,5 @@
+"""A test module"""
+
 test_graph = {
     "points": [
         {"x": 120.0, "y": 800.0},

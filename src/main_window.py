@@ -72,6 +72,12 @@ class MainWindow(QWidget):
         self.setLayout(self.main_window_layout)
 
     def keyPressEvent(self, event: QKeyEvent | None) -> None:
+        """The keyPressEvent method is an event handler.
+        It activates when keys on the keyboard are pressed.
+
+        Args:
+            event (QKeyEvent | None): An instance contains event information.
+        """
         key = event.key()
         if key == Qt.Key.Key_W:
             self.main_application.w_is_pressed = True
@@ -81,9 +87,15 @@ class MainWindow(QWidget):
             self.main_application.s_is_pressed = True
         elif key == Qt.Key.Key_D:
             self.main_application.d_is_pressed = True
-        return super().keyPressEvent(event)
+        super().keyPressEvent(event)
 
     def keyReleaseEvent(self, event: QKeyEvent | None) -> None:
+        """The keyReleaseEvent method is an event handler.
+        It activates when keys on the keyboard are released.
+
+        Args:
+            event (QKeyEvent | None): An instance contains event information.
+        """
         key = event.key()
         if key == Qt.Key.Key_W:
             self.main_application.w_is_pressed = False
@@ -93,4 +105,4 @@ class MainWindow(QWidget):
             self.main_application.s_is_pressed = False
         elif key == Qt.Key.Key_D:
             self.main_application.d_is_pressed = False
-        return super().keyReleaseEvent(event)
+        super().keyReleaseEvent(event)
