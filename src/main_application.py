@@ -14,6 +14,7 @@ from PyQt6.QtGui import (
 )
 from src.items.car import Car
 from src.primitives.point import Point
+from src.primitives.polygon import Polygon
 from src.majors.world import World
 from src.majors.viewport import Viewport
 from src.majors.minimap import Minimap
@@ -45,6 +46,9 @@ class MainApplication(QWidget):
             self.world = World().load(WORLD_BACKUP)
         else:
             self.world = World()
+        self.road_borders = []
+        for segment in self.world.road_borders:
+            self.road_borders.append(Polygon([segment.start, segment.end]))
         self.viewport = None
         self.car = None
         self.minimap = None
@@ -76,6 +80,7 @@ class MainApplication(QWidget):
                 self.car.accelerate_backward()
             if self.d_is_pressed:
                 self.car.turn_steering_wheel(degrees(0.03))
+        self.car.update(self.road_borders)
         self.minimap.update(self.car)
 
     def mousePressEvent(self, event: QMouseEvent | None) -> None:
@@ -132,6 +137,7 @@ class MainApplication(QWidget):
             event (QShowEvent | None): An instance contains event information.
         """
         self.car = Car(Point(self.width() / 2 - 120, self.height() / 2))
+        self.car.update([])
         if VIEWPORT_BACKUP:
             self.viewport = Viewport(
                 self.width() / 2,
@@ -158,7 +164,6 @@ class MainApplication(QWidget):
         view_point = self.viewport.get_offset().scale(-1)
         self.viewport.reset(painter_1, self.rect())
         self.world.draw(painter_1, view_point)
-        self.car.update([])
         for sensor in self.car.sensors:
             sensor.draw(painter_1)
         self.car.draw(painter_1)
