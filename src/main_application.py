@@ -1,6 +1,6 @@
 """This module contains the MainApplication class."""
 
-from math import degrees
+from math import degrees, inf
 from PyQt6.QtWidgets import QWidget, QSizePolicy
 from PyQt6.QtCore import Qt, QTimer, QRect
 from PyQt6.QtGui import (
@@ -25,6 +25,7 @@ from data.backups.viewport_backup import VIEWPORT_BACKUP
 class MainApplication(QWidget):
     """The main application that is Inherited from QWidget."""
 
+    number_of_ai_cars = 50
     w_is_pressed = False
     a_is_pressed = False
     s_is_pressed = False
@@ -50,8 +51,9 @@ class MainApplication(QWidget):
         for segment in self.world.road_borders:
             self.road_borders.append(Polygon([segment.start, segment.end]))
         self.viewport = None
-        self.car = None
         self.minimap = None
+        self.cars = []
+        self.best_car = None
         self.base_timer = QTimer(self)
         self.base_timer.timeout.connect(self.run)
         self.graphic_timer = QTimer(self)
@@ -71,17 +73,38 @@ class MainApplication(QWidget):
 
     def run(self) -> None:
         """A method that runs on base timer timeout and runs the base logic of the application."""
-        if self.car.control_type == "user":
+        if self.best_car.control_type == "user":
             if self.w_is_pressed:
-                self.car.accelerate_forward()
+                self.best_car.accelerate_forward()
             if self.a_is_pressed:
-                self.car.turn_steering_wheel(degrees(-0.03))
+                self.best_car.turn_steering_wheel(degrees(-0.03))
             if self.s_is_pressed:
-                self.car.accelerate_backward()
+                self.best_car.accelerate_backward()
             if self.d_is_pressed:
-                self.car.turn_steering_wheel(degrees(0.03))
-        self.car.update(self.road_borders)
-        self.minimap.update(self.car)
+                self.best_car.turn_steering_wheel(degrees(0.03))
+        best_fitness = -inf
+        for car in self.cars:
+            car.update(self.road_borders)
+            if car.fitness > best_fitness:
+                best_fitness = car.fitness
+                self.best_car = car
+        self.minimap.update(self.best_car)
+
+    def generate_cars(self, count: int) -> list:
+        """Generate a list of cars as many as the given count.
+
+        Args:
+            count (int): Number of cars to generate.
+
+        Returns:
+            list: List of cars.
+        """
+        cars = []
+        for _ in range(count):
+            start_point = Point(self.width() / 2 - 120, self.height() / 2)
+            start_angle = 0
+            cars.append(Car(start_point, start_angle, "ai"))
+        return cars
 
     def mousePressEvent(self, event: QMouseEvent | None) -> None:
         """The mousePressEvent method is an event handler.
@@ -136,8 +159,6 @@ class MainApplication(QWidget):
         Args:
             event (QShowEvent | None): An instance contains event information.
         """
-        self.car = Car(Point(self.width() / 2 - 120, self.height() / 2))
-        self.car.update([])
         if VIEWPORT_BACKUP:
             self.viewport = Viewport(
                 self.width() / 2,
@@ -147,7 +168,13 @@ class MainApplication(QWidget):
             )
         else:
             self.viewport = Viewport(self.width() / 2, self.height() / 2)
-        self.minimap = Minimap(self.world.graph, self.car, self.width(), self.height())
+        self.cars = self.generate_cars(self.number_of_ai_cars)
+        for car in self.cars:
+            car.update([])
+        self.best_car = self.cars[0]
+        self.minimap = Minimap(
+            self.world.graph, self.best_car, self.width(), self.height()
+        )
         super().resizeEvent(event)
         self.start_timers()
 
@@ -164,9 +191,11 @@ class MainApplication(QWidget):
         view_point = self.viewport.get_offset().scale(-1)
         self.viewport.reset(painter_1, self.rect())
         self.world.draw(painter_1, view_point)
-        for sensor in self.car.sensors:
+        for sensor in self.best_car.sensors:
             sensor.draw(painter_1)
-        self.car.draw(painter_1)
+        for car in self.cars:
+            car.draw(painter_1, 0.15)
+        self.best_car.draw(painter_1)
         painter_2 = QPainter(self)
         self.minimap.draw(painter_2, view_point)
         painter_2.setPen(QPen(QColor(255, 128, 20), 1, Qt.PenStyle.SolidLine))
