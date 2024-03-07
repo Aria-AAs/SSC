@@ -2,13 +2,15 @@
 
 from math import degrees
 from PyQt6.QtWidgets import QWidget, QSizePolicy
-from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtCore import Qt, QTimer, QRect
 from PyQt6.QtGui import (
     QPaintEvent,
     QPainter,
     QShowEvent,
     QMouseEvent,
     QWheelEvent,
+    QPen,
+    QColor,
 )
 from src.items.car import Car
 from src.primitives.point import Point
@@ -37,6 +39,8 @@ class MainApplication(QWidget):
         self.setSizePolicy(
             QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         )
+        self.setStyleSheet("QWidget{font-size:20px;}")
+        self.clock_counter_variable = 0
         if WORLD_BACKUP:
             self.world = World().load(WORLD_BACKUP)
         else:
@@ -48,11 +52,18 @@ class MainApplication(QWidget):
         self.base_timer.timeout.connect(self.run)
         self.graphic_timer = QTimer(self)
         self.graphic_timer.timeout.connect(self.update)
+        self.clock = QTimer(self)
+        self.clock.timeout.connect(self.clock_counter)
 
     def start_timers(self) -> None:
         """Start timers of the application."""
+        self.clock.start(1000)
         self.base_timer.start(10)
         self.graphic_timer.start(round((1 / self.frames_show_per_second) * 1000))
+
+    def clock_counter(self) -> None:
+        """Count every second."""
+        self.clock_counter_variable += 1
 
     def run(self) -> None:
         """A method that runs on base timer timeout and runs the base logic of the application."""
@@ -141,6 +152,8 @@ class MainApplication(QWidget):
         Args:
             event (QPaintEvent | None): An instance contains event information.
         """
+        minutes, seconds = divmod(self.clock_counter_variable, 60)
+        hours, minutes = divmod(minutes, 60)
         painter_1 = QPainter(self)
         view_point = self.viewport.get_offset().scale(-1)
         self.viewport.reset(painter_1, self.rect())
@@ -149,8 +162,12 @@ class MainApplication(QWidget):
         for sensor in self.car.sensors:
             sensor.draw(painter_1)
         self.car.draw(painter_1)
-        painter_1.end()
         painter_2 = QPainter(self)
         self.minimap.draw(painter_2, view_point)
-        painter_2.end()
+        painter_2.setPen(QPen(QColor(255, 128, 20), 1, Qt.PenStyle.SolidLine))
+        painter_2.drawText(
+            QRect(40, 30, 400, 30),
+            Qt.AlignmentFlag.AlignLeft,
+            f"{hours:02d} : {minutes:02d} : {seconds:02d}",
+        )
         super().paintEvent(event)
