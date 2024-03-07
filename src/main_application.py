@@ -14,6 +14,7 @@ from src.items.car import Car
 from src.primitives.point import Point
 from src.majors.world import World
 from src.majors.viewport import Viewport
+from src.majors.minimap import Minimap
 from data.backups.world_backup import WORLD_BACKUP
 from data.backups.viewport_backup import VIEWPORT_BACKUP
 
@@ -42,6 +43,7 @@ class MainApplication(QWidget):
             self.world = World()
         self.viewport = None
         self.car = None
+        self.minimap = None
         self.base_timer = QTimer(self)
         self.base_timer.timeout.connect(self.run)
         self.graphic_timer = QTimer(self)
@@ -63,6 +65,7 @@ class MainApplication(QWidget):
                 self.car.accelerate_backward()
             if self.d_is_pressed:
                 self.car.turn_steering_wheel(degrees(0.03))
+        self.minimap.update(self.car)
 
     def mousePressEvent(self, event: QMouseEvent | None) -> None:
         """The mousePressEvent method is an event handler.
@@ -110,23 +113,6 @@ class MainApplication(QWidget):
         self.viewport.mouse_wheel_scroll(steps)
         super().wheelEvent(event)
 
-    def paintEvent(self, event: QPaintEvent | None) -> None:
-        """The paintEvent method is an event handler.
-        It activates when the QWidget is updated.
-
-        Args:
-            event (QPaintEvent | None): An instance contains event information.
-        """
-        painter = QPainter(self)
-        view_point = self.viewport.get_offset().scale(-1)
-        self.viewport.reset(painter, self.rect())
-        self.world.draw(painter, view_point)
-        self.car.update([])
-        for sensor in self.car.sensors:
-            sensor.draw(painter)
-        self.car.draw(painter)
-        super().paintEvent(event)
-
     def resizeEvent(self, event: QShowEvent | None) -> None:
         """The resizeEvent method is an event handler.
         It activates when the QWidget is resized.
@@ -144,5 +130,27 @@ class MainApplication(QWidget):
             )
         else:
             self.viewport = Viewport(self.width() / 2, self.height() / 2)
+        self.minimap = Minimap(self.world.graph, self.car, self.width(), self.height())
         super().resizeEvent(event)
         self.start_timers()
+
+    def paintEvent(self, event: QPaintEvent | None) -> None:
+        """The paintEvent method is an event handler.
+        It activates when the QWidget is updated.
+
+        Args:
+            event (QPaintEvent | None): An instance contains event information.
+        """
+        painter_1 = QPainter(self)
+        view_point = self.viewport.get_offset().scale(-1)
+        self.viewport.reset(painter_1, self.rect())
+        self.world.draw(painter_1, view_point)
+        self.car.update([])
+        for sensor in self.car.sensors:
+            sensor.draw(painter_1)
+        self.car.draw(painter_1)
+        painter_1.end()
+        painter_2 = QPainter(self)
+        self.minimap.draw(painter_2, view_point)
+        painter_2.end()
+        super().paintEvent(event)
