@@ -1,3 +1,5 @@
+"""This module contains the World class."""
+
 from typing import Self
 from math import floor
 from random import random
@@ -14,6 +16,8 @@ from data.backups.test_graph import test_graph
 
 
 class World:
+    """World class represents a world."""
+
     def __init__(self) -> None:
         self.graph = Graph()
         self.graph.load(test_graph)
@@ -31,12 +35,18 @@ class World:
         self.markings = []
         self.generate()
 
-    def load(self, data) -> Self:
+    def load(self, data: dict) -> Self:
+        """A method that extracts information from data.
+
+        Args:
+            data (dict): The given data.
+        """
         world = World()
         world.graph = data.graph
         return world
 
     def generate(self) -> None:
+        """Generate the world objects like roads, trees, buildings, and others."""
         self.roads.clear()
         self.lane_guides.clear()
         for segment in self.graph.segments:
@@ -49,11 +59,14 @@ class World:
         self.road_borders = Polygon([]).union(road_polygon)
         self.buildings = self.generate_buildings()
         self.trees = self.generate_trees()
-        lane_guides = self.generate_lane_guides()
-        for lane_guide in lane_guides:
-            self.lane_guides.append(lane_guide)
+        self.lane_guides = self.generate_lane_guides()
 
     def generate_buildings(self) -> list:
+        """Generate buildings.
+
+        Returns:
+            list: A list of generated buildings.
+        """
         envelopes = []
         for segment in self.graph.segments:
             envelopes.append(
@@ -114,6 +127,11 @@ class World:
         return buildings
 
     def generate_trees(self) -> list:
+        """Generate trees.
+
+        Returns:
+            list: A list of generated trees.
+        """
         points = []
         illegal_polygons = []
         for road in self.roads:
@@ -165,12 +183,15 @@ class World:
             try_counter += 1
         return trees
 
-    def generate_lane_guides(self):
+    def generate_lane_guides(self) -> list:
+        """Generate lane guides. Lane guides are Segments in the middle of lanes of roads.
+
+        Returns:
+            list: A list of generated lane guides.
+        """
         polygons = []
-        envelopes = []
         for segment in self.graph.segments:
             envelope = Envelope(segment, self.road_lane_width / 2, self.road_roundness)
-            envelopes.append(envelope)
             polygons.append(envelope.polygon)
         return Polygon([]).union(polygons)
 
@@ -180,6 +201,14 @@ class World:
         view_point: Point,
         render_radius: float = 1000,
     ) -> None:
+        """Draw the world using the given painter.
+
+        Args:
+            painter (QPainter): The painter is used for drawing.
+            view_point (Point): The center of the viewport.
+            render_radius (float, optional): Objects that are outside of this radius relative to
+            view_point will not draw. Defaults to 1000.
+        """
         for road in self.roads:
             road.draw(
                 painter,
