@@ -1,3 +1,5 @@
+"""This module contains the Minimap class."""
+
 from PyQt6.QtCore import Qt, QRectF
 from PyQt6.QtGui import QPainter, QPen, QColor, QPainterPath
 from src.items.car import Car
@@ -6,6 +8,8 @@ from src.primitives.circle import Circle
 
 
 class Minimap:
+    """Minimap class represents a minimap."""
+
     scaler = 0.05
     size = 1 / 4
     margin = 30
@@ -17,9 +21,20 @@ class Minimap:
         self.car_position = car.position
 
     def update(self, car: Car):
+        """Update the position of the car.
+
+        Args:
+            car (Car): Car to update the position.
+        """
         self.car_position = car.position
 
     def draw(self, painter: QPainter, view_point: Point) -> None:
+        """Draw the minimap using the given painter.
+
+        Args:
+            painter (QPainter): The painter is used for drawing.
+            view_point (Point): The center of the viewport.
+        """
         radius = self.app_height * self.size / 2
         position = Point(
             self.app_width - radius - self.margin,
