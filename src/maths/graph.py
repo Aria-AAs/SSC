@@ -1,6 +1,6 @@
 """This module contains the Graph class."""
 
-from PyQt6.QtGui import QPainter
+from PyQt6.QtGui import QPainter, QColor
 from src.primitives.segment import Segment
 from src.primitives.circle import Circle
 from src.primitives.point import Point
@@ -131,4 +131,6 @@ class Graph:
         for segment in self.segments:
             segment.draw(painter, zoom * 3)
         for point in self.points:
-            Circle(point.x, point.y, zoom * 15).draw(painter)
+            Circle(point.x, point.y, zoom * 10).draw(
+                painter, QColor(0, 0, 0), outline_thickness=zoom, transparency=0.4
+            )

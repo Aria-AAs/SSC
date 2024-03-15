@@ -7,7 +7,9 @@ from src.primitives.point import Point
 from src.primitives.segment import Segment
 
 
-def nearest_point(reference_point: Point, points: list) -> Point:
+def nearest_point(
+    reference_point: Point, points: list, threshold: float = inf
+) -> Point:
     """Find the nearest point to the given reference point from the given list of points.
 
     Args:
@@ -21,7 +23,7 @@ def nearest_point(reference_point: Point, points: list) -> Point:
     nearest = None
     for point in points:
         distance = point.distance_to_point(reference_point)
-        if distance < minimum_distance:
+        if distance < minimum_distance and distance < threshold:
             minimum_distance = distance
             nearest = point
     return nearest

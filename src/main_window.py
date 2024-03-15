@@ -48,6 +48,11 @@ class MainWindow(QWidget):
             Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft
         )
         self.header_layout.addLayout(self.app_name_and_icon_layout)
+        self.main_application_buttons_layout = QHBoxLayout()
+        self.application_mode_button = QPushButton("🖊")
+        self.application_mode_button.clicked.connect(self.change_application_mode)
+        self.main_application_buttons_layout.addWidget(self.application_mode_button)
+        self.header_layout.addLayout(self.main_application_buttons_layout)
         self.application_buttons_layout = QHBoxLayout()
         self.minimize_pushbutton = QPushButton(
             QIcon(str(Path(Path(__file__).parent.parent, "asset/icons/minimize.png"))),
@@ -70,6 +75,15 @@ class MainWindow(QWidget):
         self.main_application_layout.addWidget(self.main_application)
         self.main_window_layout.addLayout(self.main_application_layout)
         self.setLayout(self.main_window_layout)
+
+    def change_application_mode(self) -> None:
+        """Change the application mode when application_mode_button is clicked."""
+        if self.application_mode_button.text() == "🖊":
+            self.application_mode_button.setText("🚗")
+            self.main_application.signals({"application_mode": "edit"})
+        else:
+            self.application_mode_button.setText("🖊")
+            self.main_application.signals({"application_mode": "run"})
 
     def keyPressEvent(self, event: QKeyEvent | None) -> None:
         """The keyPressEvent method is an event handler.
