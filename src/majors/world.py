@@ -123,7 +123,8 @@ class World:
             i += 1
         buildings = []
         for base in bases:
-            buildings.append(Building(base))
+            if len(base.points) == 4:
+                buildings.append(Building(base))
         return buildings
 
     def generate_trees(self) -> list:
