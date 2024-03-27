@@ -49,9 +49,71 @@ class MainWindow(QWidget):
         )
         self.header_layout.addLayout(self.app_name_and_icon_layout)
         self.main_application_buttons_layout = QHBoxLayout()
+        self.application_mode_layout = QHBoxLayout()
         self.application_mode_button = QPushButton("🖊")
         self.application_mode_button.clicked.connect(self.change_application_mode)
-        self.main_application_buttons_layout.addWidget(self.application_mode_button)
+        self.application_mode_layout.addWidget(self.application_mode_button)
+        self.application_mode_button.setMaximumWidth(30)
+        self.application_mode_layout.setAlignment(
+            Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft
+        )
+        self.main_application_buttons_layout.addLayout(self.application_mode_layout)
+        self.editor_buttons_layout = QHBoxLayout()
+        self.graph_editor_button = QPushButton("🌐")
+        self.graph_editor_button.clicked.connect(self.graph_editor_activator)
+        self.editor_buttons_layout.addWidget(self.graph_editor_button)
+        self.graph_editor_button.hide()
+        self.graph_editor_button.setMaximumWidth(30)
+        self.start_marking_editor_button = QPushButton("🚙")
+        self.start_marking_editor_button.clicked.connect(
+            self.start_marking_editor_activator
+        )
+        self.editor_buttons_layout.addWidget(self.start_marking_editor_button)
+        self.start_marking_editor_button.hide()
+        self.start_marking_editor_button.setMaximumWidth(30)
+        self.target_marking_editor_button = QPushButton("🎯")
+        self.target_marking_editor_button.clicked.connect(
+            self.target_marking_editor_activator
+        )
+        self.editor_buttons_layout.addWidget(self.target_marking_editor_button)
+        self.target_marking_editor_button.hide()
+        self.target_marking_editor_button.setMaximumWidth(30)
+        self.yield_marking_editor_button = QPushButton("⚠")
+        self.yield_marking_editor_button.clicked.connect(
+            self.yield_marking_editor_activator
+        )
+        self.editor_buttons_layout.addWidget(self.yield_marking_editor_button)
+        self.yield_marking_editor_button.hide()
+        self.yield_marking_editor_button.setMaximumWidth(30)
+        self.stop_marking_editor_button = QPushButton("🛑")
+        self.stop_marking_editor_button.clicked.connect(
+            self.stop_marking_editor_activator
+        )
+        self.editor_buttons_layout.addWidget(self.stop_marking_editor_button)
+        self.stop_marking_editor_button.hide()
+        self.stop_marking_editor_button.setMaximumWidth(30)
+        self.traffic_light_marking_editor_button = QPushButton("🚦")
+        self.traffic_light_marking_editor_button.clicked.connect(
+            self.traffic_light_marking_editor_activator
+        )
+        self.editor_buttons_layout.addWidget(self.traffic_light_marking_editor_button)
+        self.traffic_light_marking_editor_button.hide()
+        self.traffic_light_marking_editor_button.setMaximumWidth(30)
+        self.cross_marking_editor_button = QPushButton("🚶🏻‍♂️")
+        self.cross_marking_editor_button.clicked.connect(
+            self.cross_marking_editor_activator
+        )
+        self.editor_buttons_layout.addWidget(self.cross_marking_editor_button)
+        self.cross_marking_editor_button.hide()
+        self.cross_marking_editor_button.setMaximumWidth(30)
+        self.park_marking_editor_button = QPushButton("🅿")
+        self.park_marking_editor_button.clicked.connect(
+            self.park_marking_editor_activator
+        )
+        self.editor_buttons_layout.addWidget(self.park_marking_editor_button)
+        self.park_marking_editor_button.hide()
+        self.park_marking_editor_button.setMaximumWidth(30)
+        self.main_application_buttons_layout.addLayout(self.editor_buttons_layout)
         self.header_layout.addLayout(self.main_application_buttons_layout)
         self.application_buttons_layout = QHBoxLayout()
         self.minimize_pushbutton = QPushButton(
@@ -77,13 +139,331 @@ class MainWindow(QWidget):
         self.setLayout(self.main_window_layout)
 
     def change_application_mode(self) -> None:
-        """Change the application mode when application_mode_button is clicked."""
+        """Change the application mode when the application_mode_button is clicked."""
         if self.application_mode_button.text() == "🖊":
             self.application_mode_button.setText("🚗")
+            self.graph_editor_button.show()
+            self.graph_editor_button.setDisabled(True)
+            self.graph_editor_button.setStyleSheet(
+                "QPushButton{background-color:#555555;}"
+            )
+            self.start_marking_editor_button.show()
+            self.target_marking_editor_button.show()
+            self.yield_marking_editor_button.show()
+            self.stop_marking_editor_button.show()
+            self.traffic_light_marking_editor_button.show()
+            self.cross_marking_editor_button.show()
+            self.park_marking_editor_button.show()
             self.main_application.signals({"application_mode": "edit"})
         else:
             self.application_mode_button.setText("🖊")
+            self.graph_editor_button.hide()
+            self.graph_editor_button.setDisabled(False)
+            self.graph_editor_button.setStyleSheet(
+                "QPushButton{background-color:#777777;}"
+            )
+            self.start_marking_editor_button.hide()
+            self.start_marking_editor_button.setDisabled(False)
+            self.start_marking_editor_button.setStyleSheet(
+                "QPushButton{background-color:#777777;}"
+            )
+            self.target_marking_editor_button.hide()
+            self.target_marking_editor_button.setDisabled(False)
+            self.target_marking_editor_button.setStyleSheet(
+                "QPushButton{background-color:#777777;}"
+            )
+            self.yield_marking_editor_button.hide()
+            self.yield_marking_editor_button.setDisabled(False)
+            self.yield_marking_editor_button.setStyleSheet(
+                "QPushButton{background-color:#777777;}"
+            )
+            self.stop_marking_editor_button.hide()
+            self.stop_marking_editor_button.setDisabled(False)
+            self.stop_marking_editor_button.setStyleSheet(
+                "QPushButton{background-color:#777777;}"
+            )
+            self.traffic_light_marking_editor_button.hide()
+            self.traffic_light_marking_editor_button.setDisabled(False)
+            self.traffic_light_marking_editor_button.setStyleSheet(
+                "QPushButton{background-color:#777777;}"
+            )
+            self.cross_marking_editor_button.hide()
+            self.cross_marking_editor_button.setDisabled(False)
+            self.cross_marking_editor_button.setStyleSheet(
+                "QPushButton{background-color:#777777;}"
+            )
+            self.park_marking_editor_button.hide()
+            self.park_marking_editor_button.setDisabled(False)
+            self.park_marking_editor_button.setStyleSheet(
+                "QPushButton{background-color:#777777;}"
+            )
             self.main_application.signals({"application_mode": "run"})
+
+    def graph_editor_activator(self) -> None:
+        """Activate the graph editor when the graph_editor_button button is clicked."""
+        self.graph_editor_button.setDisabled(True)
+        self.graph_editor_button.setStyleSheet("QPushButton{background-color:#555555;}")
+        self.start_marking_editor_button.setDisabled(False)
+        self.start_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+        self.target_marking_editor_button.setDisabled(False)
+        self.target_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+        self.yield_marking_editor_button.setDisabled(False)
+        self.yield_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+        self.stop_marking_editor_button.setDisabled(False)
+        self.stop_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+        self.traffic_light_marking_editor_button.setDisabled(False)
+        self.traffic_light_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+        self.cross_marking_editor_button.setDisabled(False)
+        self.cross_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+        self.park_marking_editor_button.setDisabled(False)
+        self.park_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+
+    def start_marking_editor_activator(self) -> None:
+        """Activate the graph editor when the start_marking_editor_button button is clicked."""
+        self.graph_editor_button.setDisabled(False)
+        self.graph_editor_button.setStyleSheet("QPushButton{background-color:#777777;}")
+        self.start_marking_editor_button.setDisabled(True)
+        self.start_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#555555;}"
+        )
+        self.target_marking_editor_button.setDisabled(False)
+        self.target_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+        self.yield_marking_editor_button.setDisabled(False)
+        self.yield_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+        self.stop_marking_editor_button.setDisabled(False)
+        self.stop_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+        self.traffic_light_marking_editor_button.setDisabled(False)
+        self.traffic_light_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+        self.cross_marking_editor_button.setDisabled(False)
+        self.cross_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+        self.park_marking_editor_button.setDisabled(False)
+        self.park_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+
+    def target_marking_editor_activator(self) -> None:
+        """Activate the graph editor when the target_marking_editor_button button is clicked."""
+        self.graph_editor_button.setDisabled(False)
+        self.graph_editor_button.setStyleSheet("QPushButton{background-color:#777777;}")
+        self.start_marking_editor_button.setDisabled(False)
+        self.start_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+        self.target_marking_editor_button.setDisabled(True)
+        self.target_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#555555;}"
+        )
+        self.yield_marking_editor_button.setDisabled(False)
+        self.yield_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+        self.stop_marking_editor_button.setDisabled(False)
+        self.stop_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+        self.traffic_light_marking_editor_button.setDisabled(False)
+        self.traffic_light_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+        self.cross_marking_editor_button.setDisabled(False)
+        self.cross_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+        self.park_marking_editor_button.setDisabled(False)
+        self.park_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+
+    def yield_marking_editor_activator(self) -> None:
+        """Activate the graph editor when the yield_marking_editor_button button is clicked."""
+        self.graph_editor_button.setDisabled(False)
+        self.graph_editor_button.setStyleSheet("QPushButton{background-color:#777777;}")
+        self.start_marking_editor_button.setDisabled(False)
+        self.start_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+        self.target_marking_editor_button.setDisabled(False)
+        self.target_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+        self.yield_marking_editor_button.setDisabled(True)
+        self.yield_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#555555;}"
+        )
+        self.stop_marking_editor_button.setDisabled(False)
+        self.stop_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+        self.traffic_light_marking_editor_button.setDisabled(False)
+        self.traffic_light_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+        self.cross_marking_editor_button.setDisabled(False)
+        self.cross_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+        self.park_marking_editor_button.setDisabled(False)
+        self.park_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+
+    def stop_marking_editor_activator(self) -> None:
+        """Activate the graph editor when the stop_marking_editor_button button is clicked."""
+        self.graph_editor_button.setDisabled(False)
+        self.graph_editor_button.setStyleSheet("QPushButton{background-color:#777777;}")
+        self.start_marking_editor_button.setDisabled(False)
+        self.start_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+        self.target_marking_editor_button.setDisabled(False)
+        self.target_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+        self.yield_marking_editor_button.setDisabled(False)
+        self.yield_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+        self.stop_marking_editor_button.setDisabled(True)
+        self.stop_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#555555;}"
+        )
+        self.traffic_light_marking_editor_button.setDisabled(False)
+        self.traffic_light_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+        self.cross_marking_editor_button.setDisabled(False)
+        self.cross_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+        self.park_marking_editor_button.setDisabled(False)
+        self.park_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+
+    def traffic_light_marking_editor_activator(self) -> None:
+        """Activate the graph editor when the traffic_light_marking_editor_button button is
+        clicked.
+        """
+        self.graph_editor_button.setDisabled(False)
+        self.graph_editor_button.setStyleSheet("QPushButton{background-color:#777777;}")
+        self.start_marking_editor_button.setDisabled(False)
+        self.start_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+        self.target_marking_editor_button.setDisabled(False)
+        self.target_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+        self.yield_marking_editor_button.setDisabled(False)
+        self.yield_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+        self.stop_marking_editor_button.setDisabled(False)
+        self.stop_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+        self.traffic_light_marking_editor_button.setDisabled(True)
+        self.traffic_light_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#555555;}"
+        )
+        self.cross_marking_editor_button.setDisabled(False)
+        self.cross_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+        self.park_marking_editor_button.setDisabled(False)
+        self.park_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+
+    def cross_marking_editor_activator(self) -> None:
+        """Activate the graph editor when the cross_marking_editor_button button is clicked."""
+        self.graph_editor_button.setDisabled(False)
+        self.graph_editor_button.setStyleSheet("QPushButton{background-color:#777777;}")
+        self.start_marking_editor_button.setDisabled(False)
+        self.start_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+        self.target_marking_editor_button.setDisabled(False)
+        self.target_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+        self.yield_marking_editor_button.setDisabled(False)
+        self.yield_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+        self.stop_marking_editor_button.setDisabled(False)
+        self.stop_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+        self.traffic_light_marking_editor_button.setDisabled(False)
+        self.traffic_light_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+        self.cross_marking_editor_button.setDisabled(True)
+        self.cross_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#555555;}"
+        )
+        self.park_marking_editor_button.setDisabled(False)
+        self.park_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+
+    def park_marking_editor_activator(self) -> None:
+        """Activate the graph editor when the park_marking_editor_button button is clicked."""
+        self.graph_editor_button.setDisabled(False)
+        self.graph_editor_button.setStyleSheet("QPushButton{background-color:#777777;}")
+        self.start_marking_editor_button.setDisabled(False)
+        self.start_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+        self.target_marking_editor_button.setDisabled(False)
+        self.target_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+        self.yield_marking_editor_button.setDisabled(False)
+        self.yield_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+        self.stop_marking_editor_button.setDisabled(False)
+        self.stop_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+        self.traffic_light_marking_editor_button.setDisabled(False)
+        self.traffic_light_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+        self.cross_marking_editor_button.setDisabled(False)
+        self.cross_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#777777;}"
+        )
+        self.park_marking_editor_button.setDisabled(True)
+        self.park_marking_editor_button.setStyleSheet(
+            "QPushButton{background-color:#555555;}"
+        )
 
     def keyPressEvent(self, event: QKeyEvent | None) -> None:
         """The keyPressEvent method is an event handler.
