@@ -81,7 +81,7 @@ class GraphEditor:
 
         Args:
             painter (QPainter): The painter is used for drawing.
-            zoom (float): _description_
+            zoom (float): The amount of zoom.
         """
         self.graph.draw(painter, zoom)
         if self.hovered:

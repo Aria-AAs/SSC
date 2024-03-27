@@ -103,10 +103,10 @@ class MainApplication(QWidget):
                 self.graph_editor.mouse_move(Point(pos.x(), pos.y()), self.viewport)
 
     def signals(self, signals: dict) -> None:
-        """_summary_
+        """Get signals from main_window for changing the state of the program.
 
         Args:
-            signals (dict): _description_
+            signals (dict): The given signal to change the state of the program.
         """
         for signal, value in signals.items():
             if signal == "application_mode":

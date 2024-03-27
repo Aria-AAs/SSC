@@ -126,7 +126,7 @@ class Graph:
 
         Args:
             painter (QPainter): The painter is used for drawing.
-            zoom (float): The amount zoom.
+            zoom (float): The amount of zoom.
         """
         for segment in self.segments:
             segment.draw(painter, zoom * 3)
