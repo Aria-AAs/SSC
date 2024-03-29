@@ -1,5 +1,6 @@
 """This module contains the Graph class."""
 
+from typing import Self
 from PyQt6.QtGui import QPainter, QColor
 from src.primitives.segment import Segment
 from src.primitives.circle import Circle
@@ -12,8 +13,30 @@ class Graph:
     def __init__(
         self, points: list | None = None, segments: list | None = None
     ) -> None:
-        self.points = points
-        self.segments = segments
+        self.points = []
+        if points:
+            for point in points:
+                self.points.append(point)
+        self.segments = []
+        if segments:
+            for segment in segments:
+                self.segments.append(segment)
+
+    def __eq__(self, other: Self) -> bool:
+        if (len(self.points) != len(other.points)) or (
+            len(self.segments) != len(other.segments)
+        ):
+            return False
+        for i, _ in enumerate(self.points):
+            if self.points[i] != other.points[i]:
+                return False
+        for i, _ in enumerate(self.segments):
+            if self.segments[i] != other.segments[i]:
+                return False
+        return True
+
+    def __ne__(self, other: Self) -> bool:
+        return not self == other
 
     def load(self, data: dict) -> None:
         """A method that extracts information from data.
@@ -32,14 +55,6 @@ class Graph:
                     Point(segment["end"]["x"], segment["end"]["y"]),
                 )
             )
-
-    def get_hash(self) -> int:
-        """Make and return the hash of the current graph object.
-
-        Returns:
-            int: The hash of the current object.
-        """
-        return hash(self)
 
     def add_point(self, point: Point) -> None:
         """Add the given point object to the current graph.
