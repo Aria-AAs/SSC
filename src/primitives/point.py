@@ -115,7 +115,7 @@ class Point:
         return atan2(self.y, self.x)
 
     def translate(self, angle: float, offset: float) -> Self:
-        """Create a new point in the new location based on this point and the given angle and
+        """Create a new point in a new location based on this point and the given angle and
         offset.
 
         Args:

@@ -13,8 +13,8 @@ class Segment:
         self.start = start
         self.end = end
 
-    def __eq__(self, __value: Self) -> bool:
-        return self.contains_point(__value.start) and self.contains_point(__value.end)
+    def __eq__(self, other: Self) -> bool:
+        return self.start == other.start and self.end == other.end
 
     def contains_point(self, point: Point) -> bool:
         """Check if the given point is a point of the segment.
@@ -78,7 +78,9 @@ class Segment:
             dict: A dict contains the projected point and the offset of it from the segment.
         """
         a = point - self.start
-        b = self.end - point
+        b = self.end - self.start
+        if b.magnitude() == 0:
+            return {"point": Point(), "offset": 0}
         normalize_b = b.normalize()
         scaler = a.dot_product(normalize_b)
         return {
