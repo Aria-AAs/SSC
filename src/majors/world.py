@@ -47,6 +47,12 @@ class World:
 
     def generate(self) -> None:
         """Generate the world objects like roads, trees, buildings, and others."""
+        self.generate_roads()
+        self.buildings = self.generate_buildings()
+        self.trees = self.generate_trees()
+
+    def generate_roads(self) -> None:
+        """Generate roads, road borders, and lane guides."""
         self.roads.clear()
         self.lane_guides.clear()
         for segment in self.graph.segments:
@@ -57,8 +63,6 @@ class World:
         for road in self.roads:
             road_polygon.append(road.polygon)
         self.road_borders = Polygon([]).union(road_polygon)
-        self.buildings = self.generate_buildings()
-        self.trees = self.generate_trees()
         self.lane_guides = self.generate_lane_guides()
 
     def generate_buildings(self) -> list:
@@ -144,44 +148,45 @@ class World:
             illegal_polygons.append(building.base)
             for point in building.base.points:
                 points.append(point)
-        points.sort(key=lambda point: point.x)
-        most_left_point = points[0]
-        most_right_point = points[-1]
-        points.sort(key=lambda point: point.y)
-        most_top_point = points[0]
-        most_bottom_point = points[-1]
         trees = []
-        try_counter = 0
-        while try_counter < 100:
-            point = Point(
-                lerp(most_left_point.x, most_right_point.x, random()),
-                lerp(most_top_point.y, most_bottom_point.y, random()),
-            )
-            keep = True
-            for polygon in illegal_polygons:
-                if (
-                    polygon.contains_point(point)
-                    or polygon.distance_to_point(point) < self.tree_size / 2
-                ):
-                    keep = False
-                    break
-            if keep:
-                for tree in trees:
-                    if point.distance_to_point(tree.center) < self.tree_size:
+        if points:
+            points.sort(key=lambda point: point.x)
+            most_left_point = points[0]
+            most_right_point = points[-1]
+            points.sort(key=lambda point: point.y)
+            most_top_point = points[0]
+            most_bottom_point = points[-1]
+            try_counter = 0
+            while try_counter < 100:
+                point = Point(
+                    lerp(most_left_point.x, most_right_point.x, random()),
+                    lerp(most_top_point.y, most_bottom_point.y, random()),
+                )
+                keep = True
+                for polygon in illegal_polygons:
+                    if (
+                        polygon.contains_point(point)
+                        or polygon.distance_to_point(point) < self.tree_size / 2
+                    ):
                         keep = False
                         break
-            if keep:
-                close_to_something = False
-                for polygon in illegal_polygons:
-                    if polygon.distance_to_point(point) < self.tree_size * 2.2:
-                        close_to_something = True
-                        break
-                keep = close_to_something
-            if keep:
-                trees.append(Tree(point, self.tree_size))
-                try_counter = 0
-                continue
-            try_counter += 1
+                if keep:
+                    for tree in trees:
+                        if point.distance_to_point(tree.center) < self.tree_size:
+                            keep = False
+                            break
+                if keep:
+                    close_to_something = False
+                    for polygon in illegal_polygons:
+                        if polygon.distance_to_point(point) < self.tree_size * 2.2:
+                            close_to_something = True
+                            break
+                    keep = close_to_something
+                if keep:
+                    trees.append(Tree(point, self.tree_size))
+                    try_counter = 0
+                    continue
+                try_counter += 1
         return trees
 
     def generate_lane_guides(self) -> list:
@@ -222,10 +227,13 @@ class World:
                 painter,
                 color=QColor(255, 255, 255),
                 width=4,
-                dash_style=[10, 10],
+                dash_style=[5, 5],
             )
         for segment in self.road_borders:
             segment.draw(painter, color=QColor(255, 255, 255), width=4)
+        for marking in self.markings:
+            if marking.type != "start":
+                marking.draw(painter)
         items = []
         for building in self.buildings:
             if building.base.distance_to_point(view_point) < render_radius:
