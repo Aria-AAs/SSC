@@ -1,6 +1,7 @@
 """This module contains the MainApplication class."""
 
 from math import degrees, inf
+from random import choice
 from PyQt6.QtWidgets import QWidget, QSizePolicy
 from PyQt6.QtCore import Qt, QTimer, QRect
 from PyQt6.QtGui import (
@@ -20,6 +21,14 @@ from src.majors.world import World
 from src.majors.viewport import Viewport
 from src.majors.minimap import Minimap
 from src.editors.graph_editor import GraphEditor
+from src.editors.cross_editor import CrossEditor
+from src.editors.park_editor import ParkEditor
+from src.editors.start_editor import StartEditor
+from src.editors.stop_editor import StopEditor
+from src.editors.target_editor import TargetEditor
+from src.editors.traffic_light_editor import TrafficLightEditor
+from src.editors.yield_editor import YieldEditor
+from src.maths.graph import Graph
 from data.backups.world_backup import WORLD_BACKUP
 from data.backups.viewport_backup import VIEWPORT_BACKUP
 
@@ -50,7 +59,17 @@ class MainApplication(QWidget):
             self.world = World().load(WORLD_BACKUP)
         else:
             self.world = World()
-        self.graph_editor = GraphEditor(self.world.graph)
+        self.editors = {
+            "graph": GraphEditor(self.world),
+        }
+        self.editors["cross_editor"] = CrossEditor(self.editors["graph"])
+        self.editors["park_editor"] = ParkEditor(self.editors["graph"])
+        self.editors["start_editor"] = StartEditor(self.editors["graph"])
+        self.editors["stop_editor"] = StopEditor(self.editors["graph"])
+        self.editors["target_editor"] = TargetEditor(self.editors["graph"])
+        self.editors["traffic_light_editor"] = TrafficLightEditor(self.editors["graph"])
+        self.editors["yield_editor"] = YieldEditor(self.editors["graph"])
+        self.active_editor = None
         self.road_borders = []
         for segment in self.world.road_borders:
             self.road_borders.append(Polygon([segment.start, segment.end]))
@@ -96,11 +115,24 @@ class MainApplication(QWidget):
                     self.best_car = car
             self.minimap.update(self.best_car)
         elif self.application_mode == "edit":
+            if self.editors["graph"].graph != self.world.graph:
+                self.editors["graph"].world.generate_roads()
+                self.world.graph = Graph(
+                    self.editors["graph"].world.graph.points,
+                    self.editors["graph"].world.graph.segments,
+                )
+                self.minimap = Minimap(
+                    self.world.graph, self.best_car, self.width(), self.height()
+                )
+            elif self.editors["graph"].world.markings != self.world.markings:
+                self.world = self.editors["graph"].world
             pos = QCursor.pos()
             pos = self.mapFromGlobal(pos)
             if pos != self._cursor:
                 self._cursor = pos
-                self.graph_editor.mouse_move(Point(pos.x(), pos.y()), self.viewport)
+                self.editors[self.active_editor].mouse_move(
+                    Point(pos.x(), pos.y()), self.viewport
+                )
 
     def signals(self, signals: dict) -> None:
         """Get signals from main_window for changing the state of the program.
@@ -109,16 +141,54 @@ class MainApplication(QWidget):
             signals (dict): The given signal to change the state of the program.
         """
         for signal, value in signals.items():
+            self.disable_editors()
             if signal == "application_mode":
                 self.application_mode = value
                 if value == "run":
-                    self.graph_editor.selected = None
-                    self.graph_editor.hovered = None
                     self.set_to_start()
-                    self.world.graph = self.graph_editor.graph
                     self.world.generate()
+                    self.road_borders.clear()
+                    for segment in self.world.road_borders:
+                        self.road_borders.append(Polygon([segment.start, segment.end]))
                 elif value == "edit":
-                    self.graph_editor.graph = self.world.graph
+                    self.signals({"editor_mode": "graph"})
+            elif signal == "editor_mode":
+                if value == "graph":
+                    self.editors["graph"] = GraphEditor(self.world)
+                    self.editors["graph"].world.generate_roads()
+                    if self.active_editor:
+                        self.editors["graph"].world.markings = self.editors[
+                            self.active_editor
+                        ].graph_editor.world.markings
+                    self.active_editor = "graph"
+                elif value == "cross_editor":
+                    self.editors["cross_editor"] = CrossEditor(self.editors["graph"])
+                    self.active_editor = "cross_editor"
+                elif value == "park_editor":
+                    self.editors["park_editor"] = ParkEditor(self.editors["graph"])
+                    self.active_editor = "park_editor"
+                elif value == "start_editor":
+                    self.editors["start_editor"] = StartEditor(self.editors["graph"])
+                    self.active_editor = "start_editor"
+                elif value == "stop_editor":
+                    self.editors["stop_editor"] = StopEditor(self.editors["graph"])
+                    self.active_editor = "stop_editor"
+                elif value == "target_editor":
+                    self.editors["target_editor"] = TargetEditor(self.editors["graph"])
+                    self.active_editor = "target_editor"
+                elif value == "traffic_light_editor":
+                    self.editors["traffic_light_editor"] = TrafficLightEditor(
+                        self.editors["graph"]
+                    )
+                    self.active_editor = "traffic_light_editor"
+                elif value == "yield_editor":
+                    self.editors["yield_editor"] = YieldEditor(self.editors["graph"])
+                    self.active_editor = "yield_editor"
+
+    def disable_editors(self) -> None:
+        """Disable the functionality of all editors."""
+        for value in self.editors.values():
+            value.disable()
 
     def set_to_start(self) -> None:
         """Setup the application parameter to start running."""
@@ -136,10 +206,20 @@ class MainApplication(QWidget):
         Returns:
             list: List of cars.
         """
+        start_markings = []
+        for marking in self.world.markings:
+            if marking.type == "start":
+                start_markings.append(marking)
         cars = []
         for _ in range(count):
             start_point = Point(self.width() / 2 - 120, self.height() / 2)
             start_angle = 0
+            if start_markings:
+                start_marking = choice(start_markings)
+                start_point = Point(
+                    start_marking.center_of_segment.x, start_marking.center_of_segment.y
+                )
+                start_angle = degrees(start_marking.direction_of_segment.angle()) - 90
             cars.append(Car(start_point, start_angle, "ai"))
         return cars
 
@@ -156,12 +236,14 @@ class MainApplication(QWidget):
             )
         if self.application_mode == "edit":
             if event.button() == Qt.MouseButton.LeftButton:
-                self.graph_editor.mouse_left_button_down(
-                    Point(event.position().x(), event.position().y())
-                )
+                self.editors[self.active_editor].mouse_left_button_down()
             elif event.button() == Qt.MouseButton.RightButton:
-                self.graph_editor.mouse_right_button_down()
-
+                if self.active_editor == "graph":
+                    self.editors["graph"].mouse_right_button_down()
+                else:
+                    self.editors[self.active_editor].mouse_right_button_down(
+                        Point(event.position().x(), event.position().y()), self.viewport
+                    )
         super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event: QMouseEvent | None) -> None:
@@ -186,7 +268,8 @@ class MainApplication(QWidget):
             self.viewport.mouse_middle_button_up()
         if self.application_mode == "edit":
             if event.button() == Qt.MouseButton.LeftButton:
-                self.graph_editor.mouse_left_button_up()
+                if self.active_editor == "graph":
+                    self.editors["graph"].mouse_left_button_up()
         super().mouseReleaseEvent(event)
 
     def wheelEvent(self, event: QWheelEvent | None) -> None:
@@ -243,7 +326,25 @@ class MainApplication(QWidget):
                 car.draw(painter_1, 0.15)
             self.best_car.draw(painter_1)
         elif self.application_mode == "edit":
-            self.graph_editor.draw(painter_1, self.viewport.zoom)
+            for road in self.editors["graph"].world.roads:
+                road.draw(
+                    painter_1,
+                    color=QColor(51, 51, 51),
+                    outline_width=15,
+                    outline_color=QColor(51, 51, 51),
+                )
+            for segment in self.editors["graph"].graph.segments:
+                segment.draw(
+                    painter_1,
+                    color=QColor(255, 255, 255),
+                    width=4,
+                    dash_style=[5, 5],
+                )
+            for segment in self.editors["graph"].world.road_borders:
+                segment.draw(painter_1, color=QColor(255, 255, 255), width=4)
+            for marking in self.editors["graph"].world.markings:
+                marking.draw(painter_1)
+            self.editors[self.active_editor].draw(painter_1, self.viewport.zoom)
         painter_2 = QPainter(self)
         self.minimap.draw(painter_2, view_point)
         painter_2.setPen(QPen(QColor(255, 128, 20), 1, Qt.PenStyle.SolidLine))
