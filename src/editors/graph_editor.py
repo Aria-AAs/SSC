@@ -1,38 +1,44 @@
 """This module contains the GraphEditor class."""
 
 from PyQt6.QtGui import QPainter, QColor
-from src.maths.graph import Graph
+from src.majors.world import World
 from src.majors.viewport import Viewport
 from src.primitives.point import Point
 from src.primitives.segment import Segment
 from src.primitives.circle import Circle
+from src.maths.graph import Graph
 from src.maths.utils import nearest_point
 
 
 class GraphEditor:
     """GraphEditor class allows editing the graph."""
 
-    def __init__(self, graph: Graph) -> None:
-        self.graph = graph
+    def __init__(self, world: World) -> None:
+        self.world = World()
+        self.world.graph = Graph(world.graph.points, world.graph.segments)
+        self.graph = self.world.graph
         self.selected = None
         self.hovered = None
         self.mouse_position = None
         self.dragging = None
 
-    def mouse_left_button_down(self, mouse_position: Point) -> None:
+    def disable(self) -> None:
+        """Disable the graph editor functionality."""
+        self.hovered = None
+        self.selected = None
+
+    def mouse_left_button_down(self) -> None:
         """The mouse_left_button_down method is an event handler.
         It is called whenever the mouse's left button is pressed inside the editor window.
-
-        Args:
-            mouse_position (Point): The position of the mouse in the window.
         """
         if self.hovered:
             self.select(self.hovered)
             self.dragging = True
         else:
-            self.graph.add_point(mouse_position)
-            self.select(mouse_position)
-            self.hovered = mouse_position
+            self.graph.add_point(self.mouse_position)
+            self.select(self.mouse_position)
+            self.hovered = self.mouse_position
+        self.world.generate_roads()
 
     def mouse_right_button_down(self) -> None:
         """The mouse_right_button_down method is an event handler.
@@ -43,6 +49,7 @@ class GraphEditor:
         elif self.hovered:
             self.graph.remove_point(self.hovered)
             self.hovered = None
+        self.world.generate_roads()
 
     def mouse_move(self, position: Point, viewport: Viewport) -> None:
         """The mouse_move method is an event handler.
@@ -59,6 +66,7 @@ class GraphEditor:
         if self.dragging:
             self.selected.x = self.mouse_position.x
             self.selected.y = self.mouse_position.y
+            self.world.generate_roads()
 
     def mouse_left_button_up(self) -> None:
         """The mouse_left_button_up method is an event handler.
