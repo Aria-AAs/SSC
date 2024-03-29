@@ -28,7 +28,7 @@ class StartMarking(Marking):
         self.type = "start"
 
     def draw(self, painter: QPainter) -> None:
-        """Draw the graph editor using the given painter.
+        """Draw the start marking using the given painter.
 
         Args:
             painter (QPainter): The painter is used for drawing.

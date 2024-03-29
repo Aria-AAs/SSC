@@ -21,7 +21,7 @@ class TargetMarking(Marking):
         self.type = "target"
 
     def draw(self, painter: QPainter) -> None:
-        """Draw the graph editor using the given painter.
+        """Draw the target marking using the given painter.
 
         Args:
             painter (QPainter): The painter is used for drawing.
