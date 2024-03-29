@@ -22,7 +22,7 @@ class StopMarking(Marking):
         self.type = "stop"
 
     def draw(self, painter: QPainter) -> None:
-        """Draw the graph editor using the given painter.
+        """Draw the stop marking using the given painter.
 
         Args:
             painter (QPainter): The painter is used for drawing.
