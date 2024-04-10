@@ -1,5 +1,6 @@
 """This module contains the Segment class."""
 
+from math import atan, inf
 from typing import Self
 from PyQt6.QtCore import QLineF, Qt
 from PyQt6.QtGui import QPainter, QPen, QColor
@@ -87,6 +88,54 @@ class Segment:
             "point": self.start + normalize_b.scale(scaler),
             "offset": scaler / b.magnitude(),
         }
+
+    def slope(self) -> float:
+        """Find the slope of this segment.
+
+        Returns:
+            float: The slope of the segment.
+        """
+        if self.end.x - self.start.x == 0:
+            return inf
+        return (self.end.y - self.start.y) / (self.end.x - self.start.x)
+
+    def angle(self) -> float:
+        """Calculate and return the angle of this segment from the x-axis (measured in radians).
+
+        Returns:
+            float: The angle of the segment in radians.
+        """
+        return atan(self.slope())
+
+    def is_parallel(self, other: Self) -> bool:
+        """Check if this segment is parallel with the other given segment.
+
+        Args:
+            other (Self): Another segment to check is parallel with this segment or not.
+
+        Returns:
+            bool: True if two segments are parallel and false otherwise.
+        """
+        return self.slope() == other.slope()
+
+    def middle_segment(self, other: Self) -> Self:
+        """Find a middle segment between two existing parallel segments.
+
+        Args:
+            other (Self): The other segment is given to find a middle segment between it and
+            this segment.
+
+        Returns:
+            Self: The middle segment. None if these two segments are not parallel.
+        """
+        if self.is_parallel(other):
+            if self.start.midpoint(other.start) != self.end.midpoint(other.end):
+                return Segment(
+                    self.start.midpoint(other.start), self.end.midpoint(other.end)
+                )
+            return Segment(
+                self.start.midpoint(other.end), self.end.midpoint(other.start)
+            )
 
     def draw(
         self,
