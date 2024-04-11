@@ -91,8 +91,8 @@ def lerp_2d(a: Point, b: Point, t: float) -> Point:
     return Point(lerp(a.x, b.x, t), lerp(a.y, b.y, t))
 
 
-def find_intersection(a1: Point, a2: Point, b1: Point, b2: Point) -> dict | None:
-    """Find the intersection between two line.
+def find_intersect(a1: Point, a2: Point, b1: Point, b2: Point) -> dict | None:
+    """Find the intersect between two line.
 
     Args:
         a1 (Point): Start of the first line.
@@ -101,7 +101,7 @@ def find_intersection(a1: Point, a2: Point, b1: Point, b2: Point) -> dict | None
         b2 (Point): end of the second line.
 
     Returns:
-        dict | None: Intersection information if exists.
+        dict | None: Intersect information if exists.
     """
     t_top = (b2.x - b1.x) * (a1.y - b1.y) - (b2.y - b1.y) * (a1.x - b1.x)
     u_top = (b1.y - a1.y) * (a1.x - a2.x) - (b1.x - a1.x) * (a1.y - a2.y)
