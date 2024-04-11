@@ -5,7 +5,7 @@ from PyQt6.QtCore import Qt, QPointF
 from PyQt6.QtGui import QPainter, QPen, QBrush, QColor, QPolygonF
 from src.primitives.segment import Segment
 from src.primitives.point import Point
-from src.maths.utils import find_intersection
+from src.maths.utils import find_intersect
 
 
 class Polygon:
@@ -40,7 +40,8 @@ class Polygon:
         """
         return Polygon(data.points)
 
-    def union(self, polygons: list) -> list:
+    @staticmethod
+    def union(polygons: list) -> list:
         """Find all segments in a list of polygons. If a segment appears in two or more
         polygons, only one of them is kept.
 
@@ -50,28 +51,20 @@ class Polygon:
         Returns:
             list: A list of all unique segments
         """
-        i = 0
-        while i < len(polygons):
-            j = i + 1
-            while j < len(polygons):
+        for i in range(len(polygons) - 1):
+            for j in range(i, len(polygons)):
                 polygons[i].break_segments(polygons[j])
-                j += 1
-            i += 1
         kept_segments = []
-        i = 0
-        while i < len(polygons):
-            for segment in polygons[i].segments:
+        for i, polygon_i in enumerate(polygons):
+            for segment in polygon_i.segments:
                 keep = True
-                j = 0
-                while j < len(polygons):
+                for j, polygon_j in enumerate(polygons):
                     if i != j:
-                        if polygons[j].contains_segment(segment):
+                        if polygon_j.contains_segment(segment):
                             keep = False
                             break
-                    j += 1
                 if keep:
                     kept_segments.append(segment)
-            i += 1
         return kept_segments
 
     def break_segments(self, other: Self) -> None:
@@ -85,7 +78,7 @@ class Polygon:
         segments_2 = other.segments
         for i, _ in enumerate(segments_1):
             for j, _ in enumerate(segments_2):
-                intersection = find_intersection(
+                intersection = find_intersect(
                     segments_1[i].start,
                     segments_1[i].end,
                     segments_2[j].start,
@@ -115,7 +108,7 @@ class Polygon:
         """
         return self.contains_point(segment.midpoint())
 
-    def contains_point(self, point: Point) -> bool:
+    def contains_point(self, point: Point, threshold: float = 0.01) -> bool:
         """Check if the given point is inside the polygon.
 
         Args:
@@ -124,12 +117,20 @@ class Polygon:
         Returns:
             bool: True if the point is inside the polygon otherwise False.
         """
-        outer_point = Point(-1000, -1000)
-        intersection_counter = 0
+        px = point.x
+        py = point.y
+        intersections = 0
         for segment in self.segments:
-            if find_intersection(outer_point, point, segment.start, segment.end):
-                intersection_counter += 1
-        return intersection_counter % 2 == 1
+            x1 = segment.start.x
+            y1 = segment.start.y
+            x2 = segment.end.x
+            y2 = segment.end.y
+            if (py < y1) != (py < y2):
+                if px - threshold < (x2 - x1) * (py - y1) / (y2 - y1) + x1:
+                    intersections += 1
+        if intersections % 2 == 1:
+            return True
+        return False
 
     def distance_to_point(self, point: Point) -> float:
         """Calculate the minimum distance from this polygon to the given point.
@@ -170,7 +171,7 @@ class Polygon:
         """
         for segment_1 in self.segments:
             for segment_2 in other.segments:
-                if find_intersection(
+                if find_intersect(
                     segment_1.start, segment_1.end, segment_2.start, segment_2.end
                 ):
                     return True
