@@ -1,0 +1,191 @@
+{
+    "graph": {
+        "points": [
+            {
+                "x": 200.0,
+                "y": 200.0
+            },
+            {
+                "x": 800.0,
+                "y": 200.0
+            },
+            {
+                "x": 800.0,
+                "y": 800.0
+            },
+            {
+                "x": 200.0,
+                "y": 800.0
+            },
+            {
+                "x": 800.0,
+                "y": 3000.0
+            }
+        ],
+        "segments": [
+            {
+                "end": {
+                    "x": 200.0,
+                    "y": 200.0
+                },
+                "start": {
+                    "x": 800.0,
+                    "y": 200.0
+                }
+            },
+            {
+                "end": {
+                    "x": 800.0,
+                    "y": 200.0
+                },
+                "start": {
+                    "x": 800.0,
+                    "y": 800.0
+                }
+            },
+            {
+                "end": {
+                    "x": 800.0,
+                    "y": 800.0
+                },
+                "start": {
+                    "x": 200.0,
+                    "y": 800.0
+                }
+            },
+            {
+                "end": {
+                    "x": 200.0,
+                    "y": 800.0
+                },
+                "start": {
+                    "x": 200.0,
+                    "y": 200.0
+                }
+            },
+            {
+                "end": {
+                    "x": 800.0,
+                    "y": 800.0
+                },
+                "start": {
+                    "x": 800.0,
+                    "y": 3000.0
+                }
+            }
+        ]
+    },
+    "markings": [],
+    "roads": [
+        {
+            "is_end_connected": false,
+            "is_oneway": false,
+            "is_start_connected": false,
+            "lefthand_rule": false,
+            "number_of_lanes_in_left_side": 1,
+            "number_of_lanes_in_right_side": 1,
+            "priority": 0,
+            "elevation": 0,
+            "lane_width": 50,
+            "name": "",
+            "segment": {
+                "end": {
+                    "x": 200.0,
+                    "y": 200.0
+                },
+                "start": {
+                    "x": 800.0,
+                    "y": 200.0
+                }
+            }
+        },
+        {
+            "is_end_connected": false,
+            "is_oneway": false,
+            "is_start_connected": false,
+            "lefthand_rule": false,
+            "number_of_lanes_in_left_side": 2,
+            "number_of_lanes_in_right_side": 2,
+            "priority": 0,
+            "elevation": 0,
+            "lane_width": 50,
+            "name": "",
+            "segment": {
+                "end": {
+                    "x": 800.0,
+                    "y": 200.0
+                },
+                "start": {
+                    "x": 800.0,
+                    "y": 800.0
+                }
+            }
+        },
+        {
+            "is_end_connected": false,
+            "is_oneway": false,
+            "is_start_connected": false,
+            "lefthand_rule": false,
+            "number_of_lanes_in_left_side": 2,
+            "number_of_lanes_in_right_side": 2,
+            "priority": 0,
+            "elevation": 0,
+            "lane_width": 50,
+            "name": "",
+            "segment": {
+                "end": {
+                    "x": 800.0,
+                    "y": 800.0
+                },
+                "start": {
+                    "x": 200.0,
+                    "y": 800.0
+                }
+            }
+        },
+        {
+            "is_end_connected": false,
+            "is_oneway": false,
+            "is_start_connected": false,
+            "lefthand_rule": false,
+            "number_of_lanes_in_left_side": 2,
+            "number_of_lanes_in_right_side": 2,
+            "priority": 0,
+            "elevation": 0,
+            "lane_width": 50,
+            "name": "",
+            "segment": {
+                "end": {
+                    "x": 200.0,
+                    "y": 800.0
+                },
+                "start": {
+                    "x": 200.0,
+                    "y": 200.0
+                }
+            }
+        },
+        {
+            "is_end_connected": false,
+            "is_oneway": false,
+            "is_start_connected": false,
+            "lefthand_rule": false,
+            "number_of_lanes_in_left_side": 2,
+            "number_of_lanes_in_right_side": 2,
+            "priority": 0,
+            "elevation": 0,
+            "lane_width": 50,
+            "name": "",
+            "segment": {
+                "end": {
+                    "x": 800.0,
+                    "y": 800.0
+                },
+                "start": {
+                    "x": 800.0,
+                    "y": 3000.0
+                }
+            }
+        }
+    ]
+}
