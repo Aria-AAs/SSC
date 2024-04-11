@@ -29,14 +29,13 @@ from src.editors.target_editor import TargetEditor
 from src.editors.traffic_light_editor import TrafficLightEditor
 from src.editors.yield_editor import YieldEditor
 from src.maths.graph import Graph
-from data.backups.world_backup import WORLD_BACKUP
 from data.backups.viewport_backup import VIEWPORT_BACKUP
 
 
 class MainApplication(QWidget):
     """The main application that is Inherited from QWidget."""
 
-    number_of_ai_cars = 50
+    number_of_ai_cars = 1
     w_is_pressed = False
     a_is_pressed = False
     s_is_pressed = False
@@ -55,10 +54,7 @@ class MainApplication(QWidget):
         self.setStyleSheet("QWidget{font-size:20px;}")
         self.application_mode = "run"
         self.clock_counter_variable = 0
-        if WORLD_BACKUP:
-            self.world = World().load(WORLD_BACKUP)
-        else:
-            self.world = World()
+        self.world = World()
         self.editors = {
             "graph": GraphEditor(self.world),
         }
@@ -95,6 +91,14 @@ class MainApplication(QWidget):
         """Count every second."""
         self.clock_counter_variable += 1
 
+    def save(self) -> None:
+        """Save the state of the application"""
+        self.world.save()
+
+    def load(self) -> None:
+        """Load a state of the application"""
+        self.world.load()
+
     def run(self) -> None:
         """A method that runs on base timer timeout and runs the base logic of the application."""
         if self.application_mode == "run":
@@ -115,8 +119,12 @@ class MainApplication(QWidget):
                     self.best_car = car
             self.minimap.update(self.best_car)
         elif self.application_mode == "edit":
-            if self.editors["graph"].graph != self.world.graph:
-                self.editors["graph"].world.generate_roads()
+            if self.editors["graph"].world.graph != self.world.graph:
+                self.editors["graph"].world.generate_roads(
+                    self.editors["graph"].number_of_left_lanes,
+                    self.editors["graph"].number_of_right_lanes,
+                    self.editors["graph"].is_oneway,
+                )
                 self.world.graph = Graph(
                     self.editors["graph"].world.graph.points,
                     self.editors["graph"].world.graph.segments,
@@ -124,6 +132,7 @@ class MainApplication(QWidget):
                 self.minimap = Minimap(
                     self.world.graph, self.best_car, self.width(), self.height()
                 )
+                self.world.roads = self.editors["graph"].world.roads
             elif self.editors["graph"].world.markings != self.world.markings:
                 self.world = self.editors["graph"].world
             pos = QCursor.pos()
@@ -155,11 +164,16 @@ class MainApplication(QWidget):
             elif signal == "editor_mode":
                 if value == "graph":
                     self.editors["graph"] = GraphEditor(self.world)
-                    self.editors["graph"].world.generate_roads()
+                    self.editors["graph"].world.generate_roads(
+                        self.editors["graph"].number_of_left_lanes,
+                        self.editors["graph"].number_of_right_lanes,
+                        self.editors["graph"].is_oneway,
+                    )
+                    self.editors["graph"].world.roads = self.world.roads
                     if self.active_editor:
                         self.editors["graph"].world.markings = self.editors[
                             self.active_editor
-                        ].graph_editor.world.markings
+                        ].world.markings
                     self.active_editor = "graph"
                 elif value == "cross_editor":
                     self.editors["cross_editor"] = CrossEditor(self.editors["graph"])
@@ -184,6 +198,12 @@ class MainApplication(QWidget):
                 elif value == "yield_editor":
                     self.editors["yield_editor"] = YieldEditor(self.editors["graph"])
                     self.active_editor = "yield_editor"
+            elif signal == "graph_editor_set_number_of_left_lanes":
+                self.editors["graph"].number_of_left_lanes = value
+            elif signal == "graph_editor_set_number_of_right_lanes":
+                self.editors["graph"].number_of_right_lanes = value
+            elif signal == "graph_editor_set_oneway_road":
+                self.editors["graph"].is_oneway = value
 
     def disable_editors(self) -> None:
         """Disable the functionality of all editors."""
@@ -327,21 +347,7 @@ class MainApplication(QWidget):
             self.best_car.draw(painter_1)
         elif self.application_mode == "edit":
             for road in self.editors["graph"].world.roads:
-                road.draw(
-                    painter_1,
-                    color=QColor(51, 51, 51),
-                    outline_width=15,
-                    outline_color=QColor(51, 51, 51),
-                )
-            for segment in self.editors["graph"].graph.segments:
-                segment.draw(
-                    painter_1,
-                    color=QColor(255, 255, 255),
-                    width=4,
-                    dash_style=[5, 5],
-                )
-            for segment in self.editors["graph"].world.road_borders:
-                segment.draw(painter_1, color=QColor(255, 255, 255), width=4)
+                road.draw(painter_1)
             for marking in self.editors["graph"].world.markings:
                 marking.draw(painter_1)
             self.editors[self.active_editor].draw(painter_1, self.viewport.zoom)
