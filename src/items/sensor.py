@@ -4,7 +4,7 @@ from math import sin, cos, radians
 from PyQt6.QtCore import Qt, QLineF
 from PyQt6.QtGui import QPainter, QPen, QColor
 from src.primitives.point import Point
-from src.maths.utils import find_intersection
+from src.maths.utils import find_intersect
 
 
 class Sensor:
@@ -43,7 +43,7 @@ class Sensor:
         )
         touches = []
         for border in road_borders:
-            touch = find_intersection(
+            touch = find_intersect(
                 self.start, self.end, border.points[0], border.points[1]
             )
             if touch:

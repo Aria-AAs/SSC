@@ -3,6 +3,7 @@
 from typing import Self
 from math import pi
 from PyQt6.QtGui import QPainter
+from src.primitives.point import Point
 from src.primitives.segment import Segment
 from src.primitives.polygon import Polygon
 
@@ -11,10 +12,14 @@ class Envelope:
     """Envelope class represents an envelope."""
 
     def __init__(
-        self, segment: Segment | None = None, width: float = 2, roundness: int = 1
+        self,
+        segment: Segment,
+        width: float = 2,
+        roundness: int = 1,
+        offset: Point = Point(),
     ) -> None:
-        point_1 = segment.start
-        point_2 = segment.end
+        point_1 = segment.start + offset
+        point_2 = segment.end + offset
         radius = width / 2
         alpha = (point_1 - point_2).angle()
         alpha_cw = alpha + pi / 2
@@ -40,7 +45,7 @@ class Envelope:
         Args:
             data (dict): The given data.
         """
-        envelope = Envelope()
+        envelope = Envelope(Segment(Point(), Point()))
         envelope.polygon = Polygon([]).load(data.polygon)
         return envelope
 

@@ -7,6 +7,8 @@ from PyQt6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QPushButton,
+    QCheckBox,
+    QDoubleSpinBox,
 )
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QIcon, QKeyEvent
@@ -28,6 +30,7 @@ class MainWindow(QWidget):
         """Set up the UI of the main window."""
         self.setStyleSheet("QWidget{background-color:#777777;color:#000000;}")
         self.setWindowTitle("Self-driving Smart Cars")
+        self.setGeometry(-1920, 0, 1920, 1080)
         self.showFullScreen()
         self.setWindowIcon(
             QIcon(str(Path(Path(__file__).parent.parent, "asset/images/f1_car.png")))
@@ -50,14 +53,57 @@ class MainWindow(QWidget):
         self.header_layout.addLayout(self.app_name_and_icon_layout)
         self.main_application_buttons_layout = QHBoxLayout()
         self.application_mode_layout = QHBoxLayout()
+        self.application_save_button = QPushButton("💾")
+        self.application_save_button.clicked.connect(self.save)
+        self.application_save_button.setMaximumWidth(30)
+        self.application_mode_layout.addWidget(self.application_save_button)
+        self.application_load_button = QPushButton("📂")
+        self.application_load_button.clicked.connect(self.load)
+        self.application_load_button.setMaximumWidth(30)
+        self.application_mode_layout.addWidget(self.application_load_button)
         self.application_mode_button = QPushButton("🖊")
         self.application_mode_button.clicked.connect(self.change_application_mode)
-        self.application_mode_layout.addWidget(self.application_mode_button)
         self.application_mode_button.setMaximumWidth(30)
+        self.application_mode_layout.addWidget(self.application_mode_button)
         self.application_mode_layout.setAlignment(
             Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft
         )
         self.main_application_buttons_layout.addLayout(self.application_mode_layout)
+        self.graph_editor_option_layout = QHBoxLayout()
+        self.edit_mode_button = QPushButton("⬆")
+        self.edit_mode_button.clicked.connect(self.toggle_edit_mode)
+        self.edit_mode_button.setMaximumWidth(30)
+        self.edit_mode_button.hide()
+        self.graph_editor_option_layout.addWidget(self.edit_mode_button)
+        self.set_road_to_oneway_checkbox = QCheckBox()
+        self.set_road_to_oneway_checkbox.setLayoutDirection(
+            Qt.LayoutDirection.RightToLeft
+        )
+        self.set_road_to_oneway_checkbox.setToolTip("One way road")
+        self.set_road_to_oneway_checkbox.toggled.connect(self.toggle_oneway)
+        self.set_road_to_oneway_checkbox.hide()
+        self.graph_editor_option_layout.addWidget(self.set_road_to_oneway_checkbox)
+        self.number_of_left_lanes = QDoubleSpinBox()
+        self.number_of_left_lanes.setDecimals(0)
+        self.number_of_left_lanes.setRange(1, 4)
+        self.number_of_left_lanes.setValue(2)
+        self.number_of_left_lanes.setToolTip("Number of lanes in left side of the road")
+        self.number_of_left_lanes.valueChanged.connect(self.change_number_of_left_lanes)
+        self.number_of_left_lanes.hide()
+        self.graph_editor_option_layout.addWidget(self.number_of_left_lanes)
+        self.number_of_right_lanes = QDoubleSpinBox()
+        self.number_of_right_lanes.setDecimals(0)
+        self.number_of_right_lanes.setRange(1, 4)
+        self.number_of_right_lanes.setValue(2)
+        self.number_of_right_lanes.setToolTip(
+            "Number of lanes in right side of the road"
+        )
+        self.number_of_right_lanes.valueChanged.connect(
+            self.change_number_of_right_lanes
+        )
+        self.number_of_right_lanes.hide()
+        self.graph_editor_option_layout.addWidget(self.number_of_right_lanes)
+        self.main_application_buttons_layout.addLayout(self.graph_editor_option_layout)
         self.editor_buttons_layout = QHBoxLayout()
         self.graph_editor_button = QPushButton("🌐")
         self.graph_editor_button.clicked.connect(self.graph_editor_activator)
@@ -138,8 +184,64 @@ class MainWindow(QWidget):
         self.main_window_layout.addLayout(self.main_application_layout)
         self.setLayout(self.main_window_layout)
 
+    def save(self) -> None:
+        """Save the state of main_application"""
+        self.main_application.save()
+
+    def load(self) -> None:
+        """Load a state of main_application"""
+        self.main_application.load()
+
+    def toggle_oneway(self) -> None:
+        """_summary_"""
+        if self.set_road_to_oneway_checkbox.isChecked():
+            self.number_of_left_lanes.setRange(0, 0)
+            self.number_of_left_lanes.setValue(0)
+            self.number_of_left_lanes.setDisabled(True)
+            self.number_of_right_lanes.setRange(1, 8)
+            self.main_application.signals({"graph_editor_set_oneway_road": True})
+        else:
+            self.number_of_left_lanes.setRange(1, 4)
+            self.number_of_left_lanes.setValue(2)
+            self.number_of_left_lanes.setDisabled(False)
+            self.number_of_right_lanes.setRange(1, 4)
+            if self.number_of_right_lanes.value() > 4:
+                self.number_of_right_lanes.setValue(4)
+            self.main_application.signals({"graph_editor_set_oneway_road": False})
+
+    def change_number_of_left_lanes(self) -> None:
+        """_summary_"""
+        self.main_application.signals(
+            {
+                "graph_editor_set_number_of_left_lanes": int(
+                    self.number_of_left_lanes.value()
+                )
+            }
+        )
+
+    def change_number_of_right_lanes(self) -> None:
+        """_summary_"""
+        self.main_application.signals(
+            {
+                "graph_editor_set_number_of_right_lanes": int(
+                    self.number_of_right_lanes.value()
+                )
+            }
+        )
+
+    def toggle_edit_mode(self) -> None:
+        """toggle the graph editor mode when the edit_mode_button is clicked."""
+        if self.edit_mode_button.text() == "⬆":
+            self.edit_mode_button.setText("🔃")
+        else:
+            self.edit_mode_button.setText("⬆")
+
     def enable_editors_buttons(self) -> None:
         """Reset and enable buttons of all editors."""
+        self.set_road_to_oneway_checkbox.hide()
+        self.number_of_left_lanes.hide()
+        self.number_of_right_lanes.hide()
+        self.edit_mode_button.hide()
         self.graph_editor_button.setDisabled(False)
         self.graph_editor_button.setStyleSheet("QPushButton{background-color:#777777;}")
         self.start_marking_editor_button.setDisabled(False)
@@ -188,6 +290,10 @@ class MainWindow(QWidget):
             self.traffic_light_marking_editor_button.show()
             self.cross_marking_editor_button.show()
             self.park_marking_editor_button.show()
+            self.set_road_to_oneway_checkbox.show()
+            self.number_of_left_lanes.show()
+            self.number_of_right_lanes.show()
+            self.edit_mode_button.show()
             self.main_application.signals({"application_mode": "edit"})
         else:
             self.application_mode_button.setText("🖊")
@@ -207,6 +313,10 @@ class MainWindow(QWidget):
         self.graph_editor_button.setDisabled(True)
         self.graph_editor_button.setStyleSheet("QPushButton{background-color:#555555;}")
         self.main_application.signals({"editor_mode": "graph"})
+        self.set_road_to_oneway_checkbox.show()
+        self.number_of_left_lanes.show()
+        self.number_of_right_lanes.show()
+        self.edit_mode_button.show()
 
     def start_marking_editor_activator(self) -> None:
         """Activate the start marking editor when the start_marking_editor_button
