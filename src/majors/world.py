@@ -109,6 +109,7 @@ class World:
                         road["priority"],
                         road["elevation"],
                         road["is_oneway"],
+                        self.left_hand_rule,
                         road["is_start_connected"],
                         road["is_end_connected"],
                     )

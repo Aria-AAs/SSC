@@ -1,9 +1,9 @@
 """This module contains the Road class."""
 
-from PyQt6.QtGui import QPainter, QColor
+from PyQt6.QtGui import QPainter
 from src.primitives.segment import Segment
-from src.primitives.polygon import Polygon
 from src.primitives.envelope import Envelope
+from src.items.lane import Lane
 from src.maths.utils import lerp_2d
 
 
@@ -42,36 +42,43 @@ class Road:
         self.is_start_connected = is_start_connected
         self.is_end_connected = is_end_connected
         self.lefthand_rule = lefthand_rule
+        self.lanes = []
         segments = Envelope(self.segment, self.width, 0).polygon.segments
-        self.outer_lines = []
-        self.middle_dashed_lines = []
-        self.middle_line = None
-        if len(segments) == 4:
-            self.outer_lines = [segments[1], segments[3]]
-            if is_start_connected:
-                self.outer_lines.append(segments[0])
-            for i in range(self.number_of_lanes - 1):
-                t = (i + 1) / self.number_of_lanes
-                if t == number_of_lanes_in_right_side / self.number_of_lanes:
-                    self.middle_line = Segment(
-                        lerp_2d(self.outer_lines[0].start, self.outer_lines[1].end, t),
-                        lerp_2d(self.outer_lines[0].end, self.outer_lines[1].start, t),
-                    )
-                else:
-                    self.middle_dashed_lines.append(
-                        Segment(
-                            lerp_2d(
-                                self.outer_lines[0].start, self.outer_lines[1].end, t
-                            ),
-                            lerp_2d(
-                                self.outer_lines[0].end, self.outer_lines[1].start, t
-                            ),
-                        )
-                    )
-        polygon = Envelope(segment, self.width / 2, 0).polygon
-        self.lane_guides = Polygon.union([polygon])
-        if len(self.lane_guides) == 4:
-            self.lane_guides = [self.lane_guides[1], self.lane_guides[3]]
+        if len(segments) != 4:
+            return
+        min_t = 1 / self.number_of_lanes
+        for i in range(self.number_of_lanes):
+            t = (i + 1) / self.number_of_lanes - min_t / 2
+            is_most_left_lane = False
+            is_most_right_lane = False
+            if self.is_oneway:
+                if i == self.number_of_lanes - 1:
+                    is_most_right_lane = True
+            else:
+                if i in (0, self.number_of_lanes - 1):
+                    is_most_right_lane = True
+            if i in (self.number_of_lanes_in_left_side,):
+                is_most_left_lane = True
+            if i < self.number_of_lanes_in_left_side:
+                segment = Segment(
+                    lerp_2d(segments[1].end, segments[3].start, t),
+                    lerp_2d(segments[1].start, segments[3].end, t),
+                )
+            else:
+                segment = Segment(
+                    lerp_2d(segments[1].start, segments[3].end, t),
+                    lerp_2d(segments[1].end, segments[3].start, t),
+                )
+            self.lanes.append(
+                Lane(
+                    segment,
+                    is_most_left_lane,
+                    is_most_right_lane,
+                    50,
+                    0,
+                    self.lane_width,
+                )
+            )
 
     def draw(self, painter: QPainter) -> None:
         """Draw the intersection area using the given painter.
@@ -79,20 +86,5 @@ class Road:
         Args:
             painter (QPainter): The painter is used for drawing.
         """
-        # self.envelope.draw(
-        #     painter,
-        #     color=QColor(51, 51, 51),
-        #     outline_width=15,
-        #     outline_color=QColor(51, 51, 51),
-        # )
-        # for segment in self.polygon.segments:
-        #     segment.draw(painter, color=QColor(255, 255, 255), width=5)
-        if self.middle_line:
-            self.middle_line.draw(painter, color=QColor(255, 255, 255), width=5)
-        for segment in self.middle_dashed_lines:
-            segment.draw(
-                painter,
-                color=QColor(255, 255, 255),
-                width=5,
-                dash_style=[5, 5],
-            )
+        for lane in self.lanes:
+            lane.draw(painter)
