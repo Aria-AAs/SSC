@@ -79,11 +79,11 @@
     "roads": [
         {
             "is_end_connected": false,
-            "is_oneway": false,
+            "is_oneway": true,
             "is_start_connected": false,
             "lefthand_rule": false,
-            "number_of_lanes_in_left_side": 1,
-            "number_of_lanes_in_right_side": 1,
+            "number_of_lanes_in_left_side": 0,
+            "number_of_lanes_in_right_side": 2,
             "priority": 0,
             "elevation": 0,
             "lane_width": 50,
