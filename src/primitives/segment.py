@@ -1,6 +1,6 @@
 """This module contains the Segment class."""
 
-from math import atan, inf
+from math import degrees, atan, sqrt, inf
 from typing import Self
 from PyQt6.QtCore import QLineF, Qt
 from PyQt6.QtGui import QPainter, QPen, QColor
@@ -89,23 +89,93 @@ class Segment:
             "offset": scaler / b.magnitude(),
         }
 
-    def slope(self) -> float:
+    def slope(self, axis: str = "x") -> float:
         """Find the slope of this segment.
 
         Returns:
             float: The slope of the segment.
         """
-        if self.end.x - self.start.x == 0:
-            return inf
-        return (self.end.y - self.start.y) / (self.end.x - self.start.x)
+        if axis == "x":
+            if self.end.x == self.start.x:
+                return inf
+            return (self.end.y - self.start.y) / (self.end.x - self.start.x)
+        if axis == "y":
+            if self.end.y == self.start.y:
+                return inf
+            return (self.end.x - self.start.x) / (self.end.y - self.start.y)
 
     def angle(self) -> float:
-        """Calculate and return the angle of this segment from the x-axis (measured in radians).
+        """Calculate and return the angle of this segment from the x-axis (measured in degrees).
 
         Returns:
             float: The angle of the segment in radians.
         """
-        return atan(self.slope())
+        if self.start.x < self.end.x:
+            if self.start.y < self.end.y:
+                angle = -degrees(atan(self.slope()))
+            elif self.start.y > self.end.y:
+                angle = -degrees(atan(self.slope()))
+            else:
+                angle = 0.0
+        elif self.start.x > self.end.x:
+            if self.start.y < self.end.y:
+                angle = degrees(atan(self.slope("y"))) - 90
+            elif self.start.y > self.end.y:
+                angle = degrees(atan(self.slope("y"))) + 90
+            else:
+                angle = 180.0
+        else:
+            if self.start.y < self.end.y:
+                angle = 270.0
+            elif self.start.y > self.end.y:
+                angle = 90.0
+            else:
+                print("Error: angle = None")
+        if angle < 0:
+            angle += 360
+        return angle
+
+    def make_parallel_with_offset(self, offset: float) -> Self:
+        m = self.slope()
+        if self.start.x > self.end.x:
+            new_start = Point(
+                self.start.x - offset * m / sqrt(1 + m**2),
+                self.start.y + offset / sqrt(1 + m**2),
+            )
+            new_end = Point(
+                self.end.x - offset * m / sqrt(1 + m**2),
+                self.end.y + offset / sqrt(1 + m**2),
+            )
+            return Segment(new_start, new_end)
+        if self.start.x < self.end.x:
+            new_start = Point(
+                self.start.x + offset * m / sqrt(1 + m**2),
+                self.start.y - offset / sqrt(1 + m**2),
+            )
+            new_end = Point(
+                self.end.x + offset * m / sqrt(1 + m**2),
+                self.end.y - offset / sqrt(1 + m**2),
+            )
+            return Segment(new_start, new_end)
+        if self.start.y > self.end.y:
+            new_start = Point(
+                self.start.x - offset,
+                self.start.y,
+            )
+            new_end = Point(
+                self.end.x - offset,
+                self.end.y,
+            )
+        elif self.start.y < self.end.y:
+            new_start = Point(
+                self.start.x + offset,
+                self.start.y,
+            )
+            new_end = Point(
+                self.end.x + offset,
+                self.end.y,
+            )
+        return Segment(new_start, new_end)
 
     def is_parallel(self, other: Self) -> bool:
         """Check if this segment is parallel with the other given segment.
