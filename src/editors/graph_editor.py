@@ -91,9 +91,9 @@ class GraphEditor:
         if self.selected:
             if point == self.selected:
                 return
-            if not self.world.graph.contains_segment(Segment(self.selected, point)):
+            if not self.world.graph.contains_segment(Segment(point, self.selected)):
                 self.world.add_road(
-                    Segment(point, self.selected),
+                    Segment(self.selected, point),
                     self.number_of_left_lanes,
                     self.number_of_right_lanes,
                     self.is_oneway,
